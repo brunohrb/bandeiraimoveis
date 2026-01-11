@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
   
   <style>
@@ -371,6 +370,8 @@ label{
             <button class="btn btn-ghost" onclick="closeModalPagamentos()"><i class="fas fa-times"></i> FECHAR</button>
         </div>
 
+
+
 <button
   class="btn btn-primary w-full mb-4"
   onclick="avisarInquilinoAutomatico(findInquilinoById(currentInquilinoId))">
@@ -459,13 +460,6 @@ label{
 
 
 <script>
-
-    // ========================================================================
-    // CONFIGURAÇÃO DO SUPABASE
-    // ========================================================================
-    const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
 if(!db.financeiro){
@@ -774,6 +768,7 @@ if (caucaoValor > 0) {
     grid.appendChild(div);
   });
 }
+
 
     function findInquilinoById(id) {
         for (const predio of db.predios) {
