@@ -1749,6 +1749,20 @@ function removerPredio(predioId) {
   render();
 }
 
+    async function testeSupabase() {
+
+  const { data, error } = await supabase
+    .from('predios')
+    .select('*');
+
+  if (error) {
+    console.error("Erro ao ler Supabase:", error);
+  } else {
+    console.log("Dados vindos do Supabase (predios):", data);
+  }
+
+}
+testeSupabase();
 
 </script>
 
@@ -1815,4 +1829,5 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
