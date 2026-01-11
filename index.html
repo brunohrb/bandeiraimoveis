@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Bandeira's Imobiliaria Gestão Financeira • 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+  
+  <style>
+.card-full {
+  max-width: 100% !important;
+}
+        :root{ --bg:#f8fafc; --primary:#1e3a8a; --border:#e2e8f0; }
+        body{ font-family: 'Inter', sans-serif; background:var(--bg); color:#1e293b; }
+        .sidebar{ background:#0f172a; min-height:100vh; width:260px; position:fixed; color:white; padding:20px; }
+        .main{ margin-left: 260px; padding:40px; }
+.card{
+  background:white;
+  border-radius:16px;
+  padding:16px 16px 14px;
+  border:1px solid var(--border);
+
+  box-shadow:0 8px 28px rgba(0,0,0,0.06);
+
+  width:100%;
+  max-width:420px;
+
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+}
+        .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
+       .btn{
+  padding:8px 14px;              /* ⬅️ botão mais baixo */
+  border-radius:10px;
+  font-weight:600;               /* ⬅️ menos “gritado” */
+  font-size:14px;
+
+  cursor:pointer;
+  transition:all .2s ease;
+  border:none;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:white;
+}
+
+.btn-ghost{
+  background:#f8fafc;
+  color:#475569;
+}
+
+        .tag{ padding:4px 8px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase; display: inline-block;}
+        .tag-free{ background:#dcfce7; color:#166534; }
+        .tag-late{ background:#fee2e2; color:#991b1b; }
+        .tag-occupied{ background:#e0f2fe; color:#0369a1; }
+        .input{ width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:4px; outline:none; }
+        .payment-month { cursor: pointer; transition: transform 0.2s; }
+        .payment-month:hover { transform: scale(1.05); }
+label{
+  font-size:12px;
+  font-weight:600;
+  color:#475569;
+  letter-spacing:.02em;
+}
+.input{
+  padding:10px 12px;
+  font-size:14px;
+  border-radius:10px;
+}
+@media (max-width: 640px){
+
+  .card{
+    max-width:94%;
+    padding:14px;
+    border-radius:18px;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .grid{
+    grid-template-columns:1fr !important;
+  }
+}
+@media (max-width:640px){
+  .btn{
+    width:100%;
+  }
+}
+
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <!-- NOVO DESIGN DA MARCA -->
+    <div class="mb-10 p-2 bg-blue-900 rounded-lg shadow-xl">
+        <h2 class="text-xl font-extrabold italic text-center">Bandeira's</h2>
+        <p class="text-xs text-center font-medium text-blue-300">Gestão Financeira</p>
+    </div>
+    <nav class="space-y-2">
+<div
+  onclick="voltarParaPortfolio()"
+  class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+  <i class="fas fa-home"></i> Portfólio 2026
+</div>
+<div onclick="abrirFinanceiro()"
+     class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+  📊 Financeiro
+</div>
+
+        <div onclick="localStorage.clear(); location.reload();" class="p-3 text-slate-400 hover:text-white cursor-pointer flex items-center gap-3 mt-10"><i class="fas fa-trash"></i> Resetar Sistema</div>
+    </nav>
+</div>
+
+<div class="main">
+<!-- VIEW FINANCEIRO -->
+<div id="viewFinanceiro" class="hidden">
+
+  <h1 class="text-3xl font-black mb-6">
+    DASHBOARD FINANCEIRO • 2026
+  </h1>
+
+<!-- FILTROS -->
+<div class="flex gap-4 mb-8 flex-wrap">
+
+  <select id="filtroMes" class="input w-40">
+    <option value="all">Todos os meses</option>
+    <option value="0">Janeiro</option>
+    <option value="1">Fevereiro</option>
+    <option value="2">Março</option>
+    <option value="3">Abril</option>
+    <option value="4">Maio</option>
+    <option value="5">Junho</option>
+    <option value="6">Julho</option>
+    <option value="7">Agosto</option>
+    <option value="8">Setembro</option>
+    <option value="9">Outubro</option>
+    <option value="10">Novembro</option>
+    <option value="11">Dezembro</option>
+  </select>
+
+  <select id="filtroAno" class="input w-32">
+    <option value="2026">2026</option>
+  </select>
+
+  <select id="filtroPredio" class="input w-64">
+    <option value="all">Todos os prédios</option>
+  </select>
+
+  <button class="btn btn-primary" onclick="aplicarFiltros()">
+    Aplicar filtros
+  </button>
+
+<button class="btn btn-primary" onclick="abrirModalDespesa()">
+  ➕ Nova despesa
+</button>
+
+
+</div>
+
+
+<!-- LINHA 1: LISTA + CARD GRANDE -->
+<!-- LINHA 2: CARDS RESUMO -->
+<!-- CARDS DO DASHBOARD -->
+<div class="grid grid-cols-3 gap-4 mb-10">
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Contas a Receber</p>
+    <p id="finReceber" class="text-2xl font-black text-blue-700">R$ 0,00</p>
+  </div>
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Aluguéis Recebidos</p>
+    <p id="finAluguelRecebido" class="text-2xl font-black text-green-700">R$ 0,00</p>
+  </div>
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Juros / Multas</p>
+    <p id="finJuros" class="text-2xl font-black text-amber-600">R$ 0,00</p>
+  </div>
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Inadimplência</p>
+    <p id="finInadimplencia" class="text-2xl font-black text-red-600">R$ 0,00</p>
+  </div>
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Cauções (saldo)</p>
+    <p id="finCaucao" class="text-2xl font-black text-purple-700">R$ 0,00</p>
+  </div>
+
+  <div class="card">
+    <p class="text-xs uppercase text-slate-400">Contas a Pagar</p>
+    <p id="finPagar" class="text-2xl font-black text-slate-700">R$ 0,00</p>
+  </div>
+
+<div class="card">
+  <p class="text-xs uppercase text-slate-400">Lucro</p>
+  <p id="finLucro" class="text-2xl font-black text-emerald-700">
+    R$ 0,00
+  </p>
+</div>
+
+
+  <!-- CONSOLIDADO EMBAIXO, LARGO -->
+
+</div>
+
+<!-- LISTA CONTAS A PAGAR (EMBAIXO DE TUDO) -->
+<div class="card card-full mt-10">
+
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-black">Contas a pagar</h2>
+    <span class="text-xs text-slate-400 uppercase">Detalhamento</span>
+  </div>
+
+  <div class="max-h-80 overflow-y-auto border rounded-lg">
+    <table class="w-full text-sm">
+     <thead class="bg-slate-50 text-slate-500 uppercase text-xs sticky top-0">
+  <tr>
+    <th class="p-3 text-left">Descrição</th>
+    <th class="p-3 text-left">Prédio</th>
+    <th class="p-3 text-left">Categoria</th>
+    <th class="p-3 text-left">Data</th>
+    <th class="p-3 text-right">Valor</th>
+<th class="p-3 text-center">Ações</th>
+
+  </tr>
+</thead>
+
+      <tbody id="listaDespesas"></tbody>
+    </table>
+  </div>
+
+</div>
+
+</div>
+
+
+<div id="viewPortfolio">
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">GESTÃO FINANCEIRA</h1>
+            <p class="text-slate-500">Controle de prédios e inquilinos. Data Atual: 06/01/2026</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modalPredio')"><i class="fas fa-plus"></i> NOVO PRÉDIO</button>
+    </header>
+<div id="gridPredios" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+</div>
+
+<!-- MODAL NOVO PREDIO -->
+<div id="modalPredio" class="modal">
+    <div class="card w-[450px]">
+        <h3 class="font-black text-xl mb-6">CADASTRAR PRÉDIO</h3>
+        <label class="text-xs font-bold text-slate-400 uppercase">Nome do Condomínio</label>
+        <input id="pNome" class="input mb-4" placeholder="Ex: Edifício Mar Azul">
+        <label class="text-xs font-bold text-slate-400 uppercase">Unidades (Separe por vírgula)</label>
+        <textarea id="pUnidades" class="input h-24 mb-6" placeholder="Apto 101, Apto 102, Cobertura..."></textarea>
+        <div class="flex gap-2">
+            <button class="btn btn-primary flex-1 justify-center" onclick="addPredio()">CRIAR PRÉDIO</button>
+            <button class="btn btn-ghost" onclick="closeModal('modalPredio')"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LISTA INQUILINOS (DETALHE DO PRÉDIO) -->
+<div id="modalDetalhe" class="modal">
+    <div class="card w-[90%] max-w-5xl max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="detalheTitulo" class="font-black text-2xl uppercase italic"></h3>
+            <button class="btn btn-ghost" onclick="closeModal('modalDetalhe')"><i class="fas fa-times"></i> FECHAR</button>
+        </div>
+        <table class="w-full text-left">
+            <thead class="text-xs text-slate-400 uppercase border-b">
+                <tr>
+                    <th class="pb-3">Unidade</th>
+                    <th class="pb-3">Inquilino</th>
+                    <th class="pb-3">Valor</th>
+                    <th class="pb-3">Venc.</th>
+                    <th class="pb-3">Status</th>
+<th class="pb-3">Financeiro</th>
+                    <th class="pb-3">Contrato</th>
+                    <th class="pb-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="listaUnidades"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL EDITAR/CADASTRAR INQUILINO E PAGAMENTOS -->
+<div id="modalInquilino" class="modal">
+    <div class="card w-[450px]">
+        <h3 id="inqTitulo" class="font-black text-xl mb-6 uppercase">GERIR INQUILINO</h3>
+        <input type="hidden" id="inqUnidadeId">
+        <input type="hidden" id="inqPredioId">
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold">Nome Completo</label>
+<input id="inqNome" class="input mb-3">
+
+<div class="grid grid-cols-2 gap-3 mb-3">
+  <div>
+    <label class="text-xs font-bold">Nacionalidade</label>
+    <input id="inqNacionalidade" class="input">
+  </div>
+  <div>
+    <label class="text-xs font-bold">Profissão</label>
+    <input id="inqProfissao" class="input">
+  </div>
+</div>
+
+<label class="text-xs font-bold">Identidade (RG)</label>
+<input id="inqRG" class="input mb-3">
+
+<label class="text-xs font-bold">CPF</label>
+<input id="inqCPF" class="input mb-3">
+
+<label class="text-xs font-bold">Telefone / WhatsApp</label>
+<input id="inqTelefone" class="input mb-3" placeholder="(85) 9xxxx-xxxx">
+
+<label class="text-xs font-bold">Endereço Completo</label>
+<textarea id="inqEndereco" class="input mb-3"></textarea>
+
+<label class="text-xs font-bold">Caução (R$)</label>
+<input id="inqCaucao" class="input mb-3">
+
+<div class="grid grid-cols-2 gap-3 mb-3">
+  <div>
+    <label class="text-xs font-bold">Aluguel (R$)</label>
+    <input id="inqValor" class="input" placeholder="Ex: 1.350,00">
+  </div>
+  <div>
+    <label class="text-xs font-bold">Dia de vencimento</label>
+    <input id="inqVenc" type="number" min="1" max="31" class="input">
+  </div>
+</div>
+
+                <label class="text-xs font-bold text-slate-400 uppercase">Anexo do Contrato (.pdf/imagem)</label>
+                <input id="inqArquivo" type="file" class="text-xs mt-2 block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <div id="viewContrato" class="mt-2 hidden"><a href="#" target="_blank" class="text-blue-600 font-bold text-xs underline uppercase tracking-widest"><i class="fas fa-file-pdf"></i> Visualizar Atual</a></div>
+            </div>
+            <div class="flex gap-2 pt-4">
+<button class="btn btn-ghost w-full mb-2" onclick="gerarContratoPDF()">
+    📄 Gerar contrato (PDF)
+</button>
+                <button class="btn btn-primary flex-1 justify-center" onclick="saveInquilino()">SALVAR DADOS</button>
+                <button id="btnVacar" class="btn btn-ghost text-red-600" onclick="vacarUnidade()">REMOVER</button>
+                <button class="btn btn-ghost" onclick="closeModal('modalInquilino')"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PAGAMENTOS -->
+<div id="modalPagamentos" class="modal">
+    <div class="card w-[450px]">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="pagamentosTitulo" class="font-black text-xl uppercase">Histórico 2026</h3>
+            <button class="btn btn-ghost" onclick="closeModalPagamentos()"><i class="fas fa-times"></i> FECHAR</button>
+        </div>
+
+
+
+<button
+  class="btn btn-primary w-full mb-4"
+  onclick="avisarInquilinoAutomatico(findInquilinoById(currentInquilinoId))">
+  📲 Avisar inquilino pelo WhatsApp
+</button>
+
+
+
+        <input type="hidden" id="pagInqId">
+        <div id="gridPagamentos" class="grid grid-cols-4 gap-4">
+            <!-- Renderizado via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL BAIXA DE PAGAMENTO -->
+<div id="modalBaixaPagamento" class="modal">
+  <div class="card w-[380px]">
+    
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="baixaTitulo" class="font-black text-lg uppercase">
+        Baixa de Pagamento
+      </h3>
+      <button class="btn btn-ghost" onclick="closeModal('modalBaixaPagamento')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <p id="baixaSubtitulo" class="text-xs text-slate-500 mb-4">
+      <!-- Inquilino / Unidade -->
+    </p>
+
+    <div class="space-y-3">
+
+      <div>
+     <label class="text-xs font-bold">Aluguel pago (R$)</label>
+<input
+  id="bpAluguel"
+  type="number"
+  step="0.01"
+  class="input"
+  oninput="atualizarTotalBaixa()">
+
+
+      </div>
+
+      <div>
+        <label class="text-xs font-bold">Juros / Multa (R$)</label>
+<input
+  id="bpJuros"
+  type="number"
+  step="0.01"
+  class="input"
+  value="0"
+  oninput="atualizarTotalBaixa()">
+
+
+      </div>
+
+      <div>
+        <label class="text-xs font-bold">Data do pagamento</label>
+        <input id="bpData" type="date" class="input">
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-lg border text-center">
+        <p class="text-xs text-slate-400 uppercase font-bold">Total recebido</p>
+        <p id="bpTotal" class="text-xl font-black text-slate-800">R$ 0,00</p>
+      </div>
+
+    </div>
+
+    <div class="flex gap-2 mt-6">
+     <button
+  class="btn btn-primary flex-1 justify-center"
+  onclick="confirmarPagamento()">
+  Confirmar pagamento
+</button>
+
+      <button class="btn btn-ghost" onclick="closeModal('modalBaixaPagamento')">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+
+    let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
+if(!db.financeiro){
+  db.financeiro = {
+    contasReceber: [],
+    contasPagar: [],
+    caixa: []
+  };
+}
+
+// ================================
+// MIGRAÇÃO SEGURA DO BANCO
+// ================================
+
+// garante estrutura de despesas
+if (!db.despesas) {
+  db.despesas = [];
+}
+
+// ajusta pagamentos antigos (true/false) para objeto
+db.predios.forEach(predio => {
+  predio.unidades.forEach(unidade => {
+    if (unidade.inquilino && Array.isArray(unidade.inquilino.pagamentos)) {
+      unidade.inquilino.pagamentos = unidade.inquilino.pagamentos.map(p => {
+        if (p === true) {
+          return {
+            pago: true,
+            aluguel: parseFloat(unidade.inquilino.valor || 0),
+            juros: 0,
+            data: null
+          };
+        }
+        if (p === false) {
+          return { pago: false };
+        }
+        return p; // já é objeto
+      });
+    }
+  });
+});
+
+// salva migração automaticamente
+localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+
+    let currentBase64 = "";
+    let currentViewingPredioId = null; 
+    const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const HOJE = new Date();
+ 
+    document.getElementById('inqArquivo').addEventListener('change', function(e) {
+        const file = e.target.files;
+        const reader = new FileReader();
+        reader.onloadend = () => currentBase64 = reader.result;
+        if(file) reader.readAsDataURL(file);
+    });
+
+  function save() {
+  gerarContasReceber(); // 🔥 ATUALIZA CONTAS A RECEBER
+  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+  render();
+}
+
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        currentBase64 = ""; 
+        render(); 
+    }
+    
+    function closeModalPagamentos() {
+        closeModal('modalPagamentos');
+        if (currentViewingPredioId) {
+            viewPredio(currentViewingPredioId); 
+        }
+    }
+
+    function addPredio() {
+        const nome = document.getElementById('pNome').value;
+        const unidadesTxt = document.getElementById('pUnidades').value;
+        if(!nome || !unidadesTxt) return;
+        const unidades = unidadesTxt.split(',').map(u => ({
+            id: Math.random().toString(36).substr(2, 9), nome: u.trim(), status: 'vago', inquilino: null
+        }));
+        db.predios.push({ id: Date.now(), nome, unidades });
+        document.getElementById('pNome').value = ''; document.getElementById('pUnidades').value = '';
+        closeModal('modalPredio');
+    }
+
+    function viewPredio(predioId) {
+        currentViewingPredioId = predioId; 
+        const p = db.predios.find(x => x.id === predioId);
+        document.getElementById('detalheTitulo').innerText = p.nome;
+        const lista = document.getElementById('listaUnidades');
+        lista.innerHTML = p.unidades.map(u => {
+            let isLate = false;
+            if (u.inquilino && u.inquilino.pagamentos) {
+                const mesAtual = HOJE.getMonth();
+                const diaVenc = parseInt(u.inquilino.venc);
+                if (!u.inquilino.pagamentos[mesAtual] && HOJE.getDate() > diaVenc) {
+                    isLate = true;
+                }
+            }
+
+const statusTag =
+  u.status === 'vago'
+    ? '<span class="tag tag-free">Vago</span>'
+    : '<span class="tag tag-occupied">Ocupado</span>';
+
+let financeiroTag = '<span class="text-slate-300">—</span>';
+
+if (u.status === 'ocupado' && u.inquilino && u.inquilino.pagamentos) {
+  const mesAtual = HOJE.getMonth();
+  const diaVenc = parseInt(u.inquilino.venc);
+
+  const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+
+if (pagamentoMes && pagamentoMes.pago === true) {
+  financeiroTag = '<span class="tag tag-free">Pago</span>';
+} else if (HOJE.getDate() > diaVenc) {
+  financeiroTag = '<span class="tag tag-late">Inadimplente</span>';
+}
+
+}
+
+            
+            // Renderiza o link ou o traço '-' se não houver contrato
+            const contratoBtn = u.inquilino && u.inquilino.contrato && u.inquilino.contrato.length > 10 ? 
+                                `<a href="${u.inquilino.contrato}" target="_blank" class="text-blue-600 hover:underline font-semibold"><i class="fas fa-file-pdf"></i> Ver Contrato</a>` : '-';
+            
+            const inquilinoNome = u.inquilino ? `<span class="cursor-pointer text-blue-700 hover:underline font-medium" onclick="viewPagamentos('${u.inquilino.id}')">${u.inquilino.nome}</span>` : '<span class="text-slate-300 italic">Disponível</span>';
+            
+            return `
+                <tr class="border-b hover:bg-slate-50 transition text-sm">
+                    <td class="py-4 font-bold text-slate-800">${u.nome}</td>
+                    <td>${inquilinoNome}</td>
+                    <td>${u.inquilino ? 'R$ '+parseFloat(u.inquilino.valor).toLocaleString('pt-BR') : '-'}</td>
+                    <td>${u.inquilino ? 'Dia '+u.inquilino.venc : '-'}</td>
+                    <td class="text-center">${statusTag}</td>
+<td class="text-center">${financeiroTag}</td>
+
+                    <td>${contratoBtn}</td> 
+                    <td class="text-right">
+                        <button onclick="editInquilino(${p.id}, '${u.id}')" class="text-blue-600 font-black text-xs uppercase hover:underline">
+                            <i class="fas fa-edit"></i> ${u.inquilino ? 'Editar' : 'Alugar'}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        openModal('modalDetalhe');
+    }
+
+    function editInquilino(predioId, unidadeId) {
+        closeModal('modalDetalhe'); 
+        const p = db.predios.find(x => x.id === predioId);
+        const u = p.unidades.find(x => x.id === unidadeId);
+        
+        document.getElementById('viewContrato').classList.add('hidden');
+        document.getElementById('viewContrato').querySelector('a').href = '#';
+        document.getElementById('inqArquivo').value = ''; // Limpa o input de arquivo visualmente
+
+        document.getElementById('inqPredioId').value = predioId;
+        document.getElementById('inqUnidadeId').value = unidadeId;
+        document.getElementById('inqTitulo').innerText = u.nome;
+
+        if(u.inquilino) {
+            document.getElementById('inqNome').value = u.inquilino.nome;
+            document.getElementById('inqValor').value = u.inquilino.valor;
+            document.getElementById('inqVenc').value = u.inquilino.venc;
+document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
+            document.getElementById('btnVacar').style.display = 'block';
+            if(u.inquilino.contrato) {
+                document.getElementById('viewContrato').classList.remove('hidden');
+                document.getElementById('viewContrato').querySelector('a').href = u.inquilino.contrato;
+            }
+        } else {
+            document.getElementById('inqNome').value = ''; document.getElementById('inqValor').value = '';
+            document.getElementById('inqVenc').value = ''; document.getElementById('btnVacar').style.display = 'none';
+        }
+        openModal('modalInquilino');
+    }
+
+    function saveInquilino() {
+        const pId = parseInt(document.getElementById('inqPredioId').value);
+        const uId = document.getElementById('inqUnidadeId').value;
+        const p = db.predios.find(x => x.id === pId);
+        const u = p.unidades.find(x => x.id === uId);
+        const pagamentos = u.inquilino?.pagamentos || 
+  Array.from({ length: 12 }, () => ({ pago: false }));
+
+     u.inquilino = {
+  id: u.inquilino?.id || Math.random().toString(36).substr(2, 9),
+  nome: document.getElementById('inqNome').value,
+  telefone: document.getElementById('inqTelefone').value,
+  valor: document.getElementById('inqValor').value,
+  venc: document.getElementById('inqVenc').value,
+  caucao: parseFloat(document.getElementById('inqCaucao').value) || 0,
+  contrato: currentBase64 || (u.inquilino ? u.inquilino.contrato : ""),
+  pagamentos: pagamentos
+};
+
+
+// ================================
+// REGISTRO DE CAUÇÃO (FINANCEIRO)
+// ================================
+
+// ================================
+// REGISTRO DE CAUÇÃO (FINANCEIRO)
+// ================================
+const caucaoValor = parseFloat(document.getElementById('inqCaucao').value) || 0;
+
+if (caucaoValor > 0) {
+
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  const jaExisteCaucao = db.financeiro.lancamentos.some(l =>
+    l.tipo === 'receita' &&
+    l.categoria === 'caucao' &&
+    l.predioId === pId &&
+    l.unidade === u.nome
+  );
+
+  if (!jaExisteCaucao) {
+    db.financeiro.lancamentos.push({
+      id: Date.now(),
+      tipo: 'receita',
+      categoria: 'caucao',
+      valor: caucaoValor,
+      data: new Date().toISOString().split('T')[0],
+      mes: new Date().getMonth(),
+      ano: 2026,
+      predioId: pId,
+      unidade: u.nome,
+      inquilinoNome: document.getElementById('inqNome').value,
+      observacao: 'Caução contratual'
+    });
+  }
+}
+
+        u.status = 'ocupado';
+        closeModal('modalInquilino');
+        save();
+        viewPredio(pId);
+    }
+
+    function vacarUnidade() {
+        if(!confirm("Remover inquilino desta unidade?")) return;
+        const pId = parseInt(document.getElementById('inqPredioId').value);
+        const uId = document.getElementById('inqUnidadeId').value;
+        const p = db.predios.find(x => x.id === pId);
+        const u = p.unidades.find(x => x.id === uId);
+        u.inquilino = null;
+        u.status = 'vago';
+        closeModal('modalInquilino');
+        save();
+        viewPredio(pId);
+    }
+
+    let currentInquilinoId = null;
+
+    function viewPagamentos(inquilinoId) {
+        currentInquilinoId = inquilinoId;
+        const inq = findInquilinoById(inquilinoId);
+        document.getElementById('pagamentosTitulo').innerText = `Histórico de ${inq.nome.split(' ')}`;
+        renderPagamentosGrid(inq);
+        openModal('modalPagamentos');
+    }
+    
+    function togglePagamento(mesIndex) {
+        const inq = findInquilinoById(currentInquilinoId);
+        inq.pagamentos[mesIndex] = !inq.pagamentos[mesIndex];
+        save(); 
+        renderPagamentosGrid(inq); 
+    }
+
+    function renderPagamentosGrid(inq) {
+  const grid = document.getElementById('gridPagamentos');
+  grid.innerHTML = '';
+
+  inq.pagamentos.forEach((pag, index) => {
+    const mesNome = MESES[index];
+
+    const pago = pag && pag.pago === true;
+
+    const div = document.createElement('div');
+    div.className = `payment-month p-3 text-center rounded-lg shadow-sm ${
+      pago ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
+    }`;
+
+    div.innerHTML = `
+      <p class="font-bold">${mesNome}</p>
+      <p class="text-xs">${pago ? 'Pago' : 'Pendente'}</p>
+    `;
+
+    div.onclick = () => {
+      if (pago) {
+        reverterPagamento(index);
+      } else {
+        abrirBaixaPagamento(index);
+      }
+    };
+
+    grid.appendChild(div);
+  });
+}
+
+
+    function findInquilinoById(id) {
+        for (const predio of db.predios) {
+            for (const unidade of predio.unidades) {
+                if (unidade.inquilino && unidade.inquilino.id === id) {
+                    return unidade.inquilino;
+                }
+            }
+        }
+        return null;
+    }
+
+function editarPredio(predioId){
+  const p = db.predios.find(x => x.id === predioId);
+  const novoNome = prompt("Digite o novo nome do prédio:", p.nome);
+  if(!novoNome) return;
+  p.nome = novoNome;
+  save();
+}
+
+
+
+function adicionarUnidade(predioId){
+  const p = db.predios.find(x => x.id === predioId);
+
+  const nome = prompt("Nome do apartamento (ex: Apto 105):");
+  if(!nome) return;
+
+  p.unidades.push({
+    id: Math.random().toString(36).substr(2,9),
+    nome: nome,
+    status: 'vago',
+    inquilino: null
+  });
+
+  save();
+}
+
+
+    function render() {
+        const grid = document.getElementById('gridPredios');
+        grid.innerHTML = db.predios.map(p => {
+            const livres = p.unidades.filter(u => u.status === 'vago').length;
+            let inadimplentesCount = 0;
+            p.unidades.forEach(u => {
+                if (u.inquilino && u.inquilino.pagamentos) {
+                    const mesAtual = HOJE.getMonth();
+                    const diaVenc = parseInt(u.inquilino.venc);
+                    if (!u.inquilino.pagamentos[mesAtual] && HOJE.getDate() > diaVenc) {
+                        inadimplentesCount++;
+                    }
+                }
+            });
+            const ocupados = p.unidades.length - livres;
+            return `
+            <div class="card relative cursor-pointer hover:shadow-xl transition"
+     onclick="viewPredio(${p.id})">
+<div class="absolute top-10 right-3 flex gap-2">
+  <button
+    onclick="event.stopPropagation(); editarPredio(${p.id})"
+    class="text-slate-400 hover:text-blue-600 text-sm"
+    title="Editar prédio">✏️</button>
+
+  <button
+    onclick="event.stopPropagation(); adicionarUnidade(${p.id})"
+    class="text-slate-400 hover:text-green-600 text-sm"
+    title="Adicionar apartamento">➕</button>
+
+  <button
+    onclick="event.stopPropagation(); removerPredio(${p.id})"
+    class="text-slate-400 hover:text-red-600 text-sm"
+    title="Apagar prédio">🗑️</button>
+</div>
+
+
+
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">${p.nome}</h3>
+                        <span class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-1 rounded">${p.unidades.length} UNID.</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase">Livres</p>
+                            <p class="text-2xl font-black text-blue-900">${livres}</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-lg border border-amber-100">
+                            <p class="text-[10px] font-bold text-amber-400 uppercase">Inadimplentes</p>
+                            <p class="text-2xl font-black text-amber-900">${inadimplentesCount}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+                        <span>Ocupação: ${((ocupados/p.unidades.length)*100).toFixed(0)}%</span>
+                        <i class="fas fa-arrow-right text-blue-600"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    render();
+
+ 
+function montarContratoTexto() {
+return `
+CONTRATO DE LOCAÇÃO DE IMÓVEL PARA FINS RESIDENCIAIS
+
+
+Por este instrumento particular, as partes a seguir nominadas celebram o CONTRATO DE LOCAÇÃO RESIDENCIAL, na forma da Lei 8.245/91, alterada pela Lei 12.112/09, conforme cláusulas e condições que a seguir reciprocamente aceitam e outorgam livremente, elegendo o Sistema de Assinatura Eletrônica como meio apto e plenamente válido para firmar o exato cumprimento das obrigações aqui assumidas, renunciando, ainda, a eventual direito de repúdio da validade desta assinatura.
+
+
+CLÁUSULA PRIMEIRA – DAS PARTES:
+
+LOCADOR(A) – PRB EMPREENDIMENTOS IMOBILIARIOS EIRELI, pessoa jurídica de direito privado, devidamente inscrita no CNPJ nº. 35.059.055/0001-51, neste ato representada por seu sócio, Paulo Glaydson Rocha Bandeira, brasileiro, casado, inscrito no CPF nº. 840.563.633-15.
+
+
+LOCATÁRIO(A) – ${inqNome.value}, ${inqNacionalidade.value}, ${inqProfissao.value}, portador(a) da Cédula de Identidade ${inqRG.value}, inscrito(a) no CPF ${inqCPF.value}, residente e domiciliado(a) à ${inqEndereco.value}.
+
+
+GARANTIA LOCATÍCIA (X) CAUÇÃO: Para garantia do fiel cumprimento de todas as obrigações contratuais assumidas neste instrumento, o LOCATÁRIO presta, neste ato, caução em dinheiro no valor de R$ ${inqCaucao.value}, equivalente a 2 (dois) meses de aluguel. O valor da caução será depositado na conta da empresa LOCADORA e será devolvido ao LOCATÁRIO ao final do contrato, desde que cumpridas todas as obrigações contratuais e entregue o imóvel nas mesmas condições de recebimento, conforme Termo de Vistoria. A caução não poderá ser utilizada para pagamento de aluguéis, taxas ou quaisquer outros encargos durante a vigência do contrato, destinando-se exclusivamente à garantia de cumprimento das obrigações contratuais. Em caso de inadimplemento das obrigações contratuais pelo LOCATÁRIO, o LOCADOR poderá utilizar o valor da caução para cobertura dos débitos pendentes, independentemente de aviso ou notificação judicial ou extrajudicial.
+
+
+CLÁUSULA SEGUNDA – OBJETO DA LOCAÇÃO: 
+
+Tem-se por objeto da locação o IMÓVEL situado na Rua Pedra Branca 170 Apto 04, Bairro Joaquim Távora, Fortaleza/CE, CEP: 60135-110, destinando-se exclusivamente para fins Residenciais, nas condições constantes no TERMO DE VISTORIA anexo que faz parte integrante do presente contrato.
+
+
+CLÁUSULA TERCEIRA – PRAZO DE LOCAÇÃO: 
+
+O prazo da presente locação será de 12 (doze) meses, iniciando no dia ${new Date().toLocaleDateString('pt-BR')} com termino após 12 (doze) meses. Após o termino do prazo, o contrato será renovado automaticamente, vigorando por prazo indeterminado. 
+
+Parágrafo Primeiro – Caso o presente contrato venha a ser rescindido pelo LOCATÁRIO durante os primeiros 12 (doze) meses, este deverá realizar o envio de notificação formal/escrita, com antecedência de 30 (trinta) dias, ocasião em que será calculada e aplicada multa de 2 (dois) meses de aluguel.
+
+Parágrafo Segundo – Escoado o prazo da locação ora fixado ou rescindida a locação por qualquer outro motivo, obriga-se o LOCATÁRIO a entregar o IMÓVEL em condições de habitabilidade, devidamente limpo e pintado, com suas instalações em perfeito estado de uso.
+
+
+CLÁUSULA QUARTA – VALOR DA LOCAÇÃO: 
+
+O aluguel mensal, livremente convencionado é, nesta data, de R$ ${inqValor.value}, a ser pago todo dia ${inqVenc.value}.
+
+Parágrafo Primeiro – O aluguel estabelecido no "caput" desta cláusula deverá ser pago através de boleto bancário que será enviado diretamente ao LOCATÁRIO. O pagamento deverá ser efetuado onde o LOCADOR indicar, por escrito, independentemente de aviso ou cobrança, até o último dia de cada mês, sempre dentro do horário bancário.
+
+Parágrafo Segundo – Caso o pagamento não seja realizado até a data do vencimento, será acrescido multa moratória de 10%, sem prejuízo dos encargos moratórios previstos na Cláusula Sétima.
+
+Parágrafo Terceiro – O aluguel mensal acima pactuado será reajustado, automaticamente, a cada 12 meses, sendo a data base a de sua celebração, aplicando-se como índice o IGP-M da FGV, ou, não sendo este calculado, qualquer índice de preços que o substitua e que reflita a variação dos preços, no período do reajuste.
+
+Parágrafo Quarto – Se, em virtude de lei subsequente, vier a ser admitida a correção do valor do aluguel em periodicidade inferior a prevista na legislação vigente, concordam as partes que a correção do aluguel e o seu indexador passará automaticamente a ser feita no menor prazo permitido pela lei posterior.
+
+Parágrafo Quinto – No ato da desocupação do imóvel, o LOCADOR realizará vistoria no local para verificar se o imóvel está em perfeitas condições de uso. Caso contrário, ficará a LOCATÁRIA obrigada a realizar os serviços ou indenizar o valor necessário à realização dos mesmos, conforme orçamentos apresentados, sem prejuízo da multa contratual prevista neste contrato.
+
+
+CLÁUSULA QUINTA – OUTROS ENCARGOS: 
+
+Correrão por conta do LOCATÁRIO todas as despesas do imóvel, inclusive tributos, condomínio, energia elétrica, água, esgoto e gás.
+
+
+CLÁUSULA SEXTA – SEGURO CONTRA INCÊNDIO: 
+
+Obriga-se ainda o LOCATÁRIO a pagar anualmente o prêmio de seguro contra incêndio do imóvel locado.
+
+
+CLÁUSULA SÉTIMA – ÔNUS DA IMPONTUALIDADE: 
+
+O aluguel e encargos não pagos na data aprazada ficarão sujeitos à multa, juros, correção monetária e honorários advocatícios, conforme previsto neste contrato.
+
+
+CLÁUSULA OITAVA – BENFEITORIAS 
+
+O LOCATÁRIO não poderá fazer qualquer modificação no imóvel locado sem autorização expressa do LOCADOR.
+
+
+CLÁUSULA NONA – RESTITUIÇÃO DO IMÓVEL
+
+Findo o prazo da locação, o imóvel será restituído em perfeitas condições de uso.
+
+
+CLÁUSULA DÉCIMA – DA VISTORIA
+
+O LOCATÁRIO permitirá a vistoria do imóvel mediante aviso prévio.
+
+
+CLÁUSULA DÉCIMA PRIMEIRA – DA OCORRÊNCIA DE DESAPROPRIAÇÃO OU SINISTRO
+
+Aplicam-se as disposições legais em caso de desapropriação ou sinistro.
+
+
+CLÁUSULA DÉCIMA SEGUNDA – HONORÁRIOS
+
+Os honorários advocatícios serão de 20% sobre o montante devido.
+
+
+CLÁUSULA DÉCIMA TERCEIRA – PROCEDIMENTOS JUDICIAIS
+
+As comunicações processuais poderão ser realizadas por via postal.
+
+
+CLÁUSULA DÉCIMA QUARTA – DO CUMPRIMENTO DAS OBRIGAÇÕES LEGAIS
+
+O LOCATÁRIO compromete-se a cumprir as normas legais e condominiais.
+
+
+CLÁUSULA DÉCIMA QUINTA – MULTA POR INFRAÇÃO CONTRATUAL 
+
+O descumprimento de cláusula contratual implicará multa equivalente a dois meses de aluguel.
+
+
+CLÁUSULA DÉCIMA SEXTA – DO DIREITO DE PREFERÊNCIA
+
+O LOCATÁRIO terá direito de preferência na aquisição do imóvel.
+
+
+CLÁUSULA DÉCIMA SÉTIMA – DA VEDAÇÃO A SUBLOCAÇÃO
+
+É vedada a sublocação sem autorização do LOCADOR.
+
+
+CLÁUSULA DÉCIMA OITAVA – DA OBRIGAÇÃO DE PAGAMENTO EM CASO DE INTERRUPÇÃO DE SERVIÇOS:
+
+Interrupções de serviços não eximem o pagamento do aluguel.
+
+
+CLÁUSULA DÉCIMA NONA – DECLARAÇÃO DE VERACIDADE DAS INFORMAÇÕES
+
+O LOCATÁRIO declara a veracidade das informações prestadas.
+
+
+CLÁUSULA VIGÉSIMA – FORO 
+
+Fica eleito o foro da cidade de Fortaleza/CE.
+
+
+Fortaleza/CE, ${new Date().toLocaleDateString('pt-BR')}
+
+
+
+PRB EMPREENDIMENTOS IMOBILIARIOS EIRELI  
+LOCADOR
+
+
+${inqNome.value}  
+LOCATÁRIO
+
+
+
+TESTEMUNHAS:
+
+Nome:
+CPF:
+
+Nome:
+CPF:
+`;
+}
+
+
+
+
+function gerarContratoPDF() {
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+    });
+
+
+    const texto = montarContratoTexto();
+
+    doc.setFont("Times", "Normal");
+    doc.setFontSize(11);
+
+    const margemEsquerda = 20;
+    const margemTopo = 20;
+    const margemInferior = 20;
+
+    const larguraPagina = 210;
+    const alturaPagina = 297;
+
+    const larguraUtil = larguraPagina - margemEsquerda * 2;
+    const alturaUtil = alturaPagina - margemTopo - margemInferior;
+
+    const linhas = doc.splitTextToSize(texto, larguraUtil);
+
+    let y = margemTopo;
+
+    for (let i = 0; i < linhas.length; i++) {
+        if (y > alturaUtil) {
+            doc.addPage();
+            y = margemTopo;
+        }
+        doc.text(linhas[i], margemEsquerda, y);
+        y += 6;
+    }
+
+    doc.save(`Contrato_${inqNome.value || 'Locacao'}.pdf`);
+}
+
+function atualizarTotalBaixa() {
+  const aluguel = document.getElementById('bpAluguel').value;
+  const juros = document.getElementById('bpJuros').value;
+
+  const aluguelNum = parseFloat(aluguel) || 0;
+  const jurosNum = parseFloat(juros) || 0;
+
+  const total = aluguelNum + jurosNum;
+
+  document.getElementById('bpTotal').innerText =
+    'R$ ' + total.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+}
+
+function abrirBaixaPagamento(mesIndex) {
+  const inq = findInquilinoById(currentInquilinoId);
+  if (!inq) return;
+
+  // guarda o mês que está sendo baixado
+  window.mesBaixaAtual = mesIndex;
+
+  // preenche valores padrão
+  document.getElementById('bpAluguel').value = inq.valor || 0;
+  document.getElementById('bpJuros').value = 0;
+
+  // data de hoje
+  document.getElementById('bpData').value =
+    new Date().toISOString().split('T')[0];
+
+  // título informativo
+  document.getElementById('baixaSubtitulo').innerText =
+    `${MESES[mesIndex]} • ${inq.nome}`;
+
+  // atualiza total
+  atualizarTotalBaixa();
+
+  // abre o modal
+  openModal('modalBaixaPagamento');
+}
+
+function confirmarPagamento() {
+  const inq = findInquilinoById(currentInquilinoId);
+  if (!inq) return;
+
+  const mes = window.mesBaixaAtual;
+
+  const aluguel = parseFloat(document.getElementById('bpAluguel').value) || 0;
+  const juros = parseFloat(document.getElementById('bpJuros').value) || 0;
+  const data = document.getElementById('bpData').value || null;
+
+  inq.pagamentos[mes] = {
+    pago: true,
+    aluguel: aluguel,
+    juros: juros,
+    data: data
+  };
+
+// ================================
+// REGISTRO FINANCEIRO (HISTÓRICO)
+// ================================
+
+if (!db.financeiro.lancamentos) {
+  db.financeiro.lancamentos = [];
+}
+
+// aluguel
+db.financeiro.lancamentos.push({
+  id: Date.now(),
+  tipo: 'receita',
+  categoria: 'aluguel',
+  valor: aluguel,
+  data: data,
+  mes: mes,
+  ano: 2026,
+  predioId: currentViewingPredioId,
+  unidade: null,
+  inquilinoNome: inq.nome,
+  observacao: 'Aluguel mensal'
+});
+
+// juros / multa
+if (juros > 0) {
+  db.financeiro.lancamentos.push({
+    id: Date.now() + 1,
+    tipo: 'receita',
+    categoria: 'juros',
+    valor: juros,
+    data: data,
+    mes: mes,
+    ano: 2026,
+    predioId: currentViewingPredioId,
+    unidade: null,
+    inquilinoNome: inq.nome,
+    observacao: 'Juros / multa'
+  });
+}
+
+
+
+  save();
+  closeModal('modalBaixaPagamento');
+  renderPagamentosGrid(inq);
+}
+
+
+
+function reverterPagamento(mesIndex) {
+  const inq = findInquilinoById(currentInquilinoId);
+  if (!inq) return;
+
+  const mesNome = MESES[mesIndex];
+
+  if (!confirm(`Deseja reverter o pagamento de ${mesNome}?`)) return;
+
+  inq.pagamentos[mesIndex] = { pago: false };
+
+  save();
+  renderPagamentosGrid(inq);
+}
+
+function getFiltrosFinanceiro() {
+  return {
+    mes: document.getElementById('filtroMes').value,
+    ano: document.getElementById('filtroAno').value,
+    predio: document.getElementById('filtroPredio').value
+  };
+}
+
+function calcularFinanceiro(){
+
+  const { mes, ano, predio } = getFiltrosFinanceiro();
+
+  let alugueisRecebidos = 0;
+  let jurosRecebidos = 0;
+  let caucaoSaldo = 0;
+  let contasPagar = 0;
+let inadimplencia = 0;
+let contasReceber = 0;
+let lucro = 0;
+let caucaoFiltrada = 0;
+
+
+// ================================
+// CAUÇÃO — SOMA REAL POR INQUILINO
+// ================================
+caucaoSaldo = 0;
+
+db.predios.forEach(predio => {
+  predio.unidades.forEach(u => {
+    if (u.status === 'ocupado' && u.inquilino) {
+      caucaoSaldo += parseFloat(u.inquilino.caucao || 0);
+
+
+    }
+  });
+});
+
+// ================================
+// INADIMPLÊNCIA REAL (VENCEU E NÃO PAGOU)
+// ================================
+inadimplencia = 0;
+
+db.predios.forEach(predio => {
+  predio.unidades.forEach(u => {
+    if (u.status === 'ocupado' && u.inquilino) {
+
+      const mesAtual = HOJE.getMonth();
+      const diaVenc = parseInt(u.inquilino.venc);
+
+      const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+
+      const naoPago = !pagamentoMes || pagamentoMes.pago !== true;
+      const venceu = HOJE.getDate() > diaVenc;
+
+      if (naoPago && venceu) {
+        inadimplencia += parseFloat(u.inquilino.valor || 0);
+      }
+    }
+  });
+});
+
+
+  // ================================
+  // RECEITAS E DESPESAS (HISTÓRICO REAL)
+  // ================================
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  db.financeiro.lancamentos.forEach(l => {
+
+    if (mes !== 'all' && l.mes != mes) return;
+if (ano && l.ano != ano) return;
+if (predio !== 'all' && l.predioId && l.predioId != predio) return;
+
+
+    if (l.tipo === 'receita') {
+
+      if (l.categoria === 'aluguel') {
+        alugueisRecebidos += l.valor;
+      }
+
+if (l.categoria === 'caucao') {
+  caucaoFiltrada += l.valor;
+}
+
+      if (l.categoria === 'juros') {
+        jurosRecebidos += l.valor;
+      }
+
+
+
+      // ================================
+
+    }
+
+    if (l.tipo === 'despesa') {
+      contasPagar += l.valor;
+    }
+  });
+
+  // ================================
+  // CONTAS A RECEBER / INADIMPLÊNCIA
+  // ================================
+// ================================
+// CONTAS A RECEBER (ABERTO)
+// ================================
+db.financeiro.contasReceber.forEach(c => {
+
+  if (mes !== 'all' && c.mes != mes) return;
+  if (ano && c.ano != ano) return;
+  if (predio !== 'all' && c.predioId != predio) return;
+
+  if (c.status === 'aberto') {
+    contasReceber += c.valor;
+  }
+});
+
+
+  document.getElementById('finAluguelRecebido').innerText =
+    'R$ ' + alugueisRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+  document.getElementById('finJuros').innerText =
+    'R$ ' + jurosRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+  document.getElementById('finCaucao').innerText =
+    'R$ ' + caucaoSaldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+document.getElementById('finPagar').innerText =
+  'R$ ' + contasPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+document.getElementById('finInadimplencia').innerText =
+  'R$ ' + inadimplencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+document.getElementById('finReceber').innerText =
+  'R$ ' + contasReceber.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2
+  });
+
+// ================================
+// LUCRO
+// ================================
+lucro = alugueisRecebidos + caucaoFiltrada - contasPagar;
+
+document.getElementById('finLucro').innerText =
+  'R$ ' + lucro.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2
+  });
+
+
+}
+
+function carregarPrediosDespesa() {
+  const select = document.getElementById('despPredio');
+  if (!select) return;
+
+  // limpa antes
+  select.innerHTML = '<option value="">Selecione um prédio</option>';
+
+  db.predios.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.innerText = p.nome;
+    select.appendChild(opt);
+  });
+}
+
+
+function carregarFiltroPredios(){
+  const select = document.getElementById('filtroPredio');
+  select.innerHTML = '<option value="all">Todos os prédios</option>';
+
+  db.predios.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.innerText = p.nome;
+    select.appendChild(opt);
+  });
+}
+
+function abrirFinanceiro(){
+  gerarContasReceber(); // 🔥 garante dados atualizados
+
+  document.getElementById('viewPortfolio').style.display = 'none';
+  document.getElementById('viewFinanceiro').classList.remove('hidden');
+
+  carregarFiltroPredios();
+  calcularFinanceiro();
+renderDespesas();
+
+}
+
+function voltarParaPortfolio(){
+
+
+// GARANTE ESTADO INICIAL CORRETO
+document.getElementById('viewPortfolio').style.display = 'block';
+document.getElementById('viewFinanceiro').classList.add('hidden');
+
+}
+
+// ================================
+// ESTADO INICIAL DA TELA (FORÇADO)
+// ================================
+window.onload = function () {
+  document.getElementById('viewPortfolio').style.display = 'block';
+  document.getElementById('viewFinanceiro').classList.add('hidden');
+};
+
+function gerarContasReceber(){
+  db.financeiro.contasReceber = [];
+
+  db.predios.forEach(predio => {
+    predio.unidades.forEach(u => {
+      if(u.status === 'ocupado' && u.inquilino){
+        for(let mes = 0; mes < 12; mes++){
+          db.financeiro.contasReceber.push({
+            predioId: predio.id,
+            unidade: u.nome,
+            inquilino: u.inquilino.nome,
+            mes,
+            ano: 2026,
+            valor: parseFloat(u.inquilino.valor),
+            juros: 0,
+status:
+  u.inquilino.pagamentos[mes] &&
+  u.inquilino.pagamentos[mes].pago === true
+    ? 'pago'
+    : 'aberto'
+          });
+        }
+      }
+    });
+  });
+}
+
+// INICIALIZA O SISTEMA AO ABRIR A PÁGINA
+
+// 1️⃣ garante que o financeiro existe
+if(!db.financeiro){
+  db.financeiro = {
+    contasReceber: [],
+    contasPagar: [],
+    caixa: []
+  };
+}
+
+// 2️⃣ gera as contas a receber
+gerarContasReceber();
+
+// 3️⃣ só depois desenha a tela
+render();
+
+// ================================
+// CONTAS A PAGAR (DESPESAS)
+// ================================
+function adicionarDespesa({
+  descricao,
+  valor,
+  data,
+  predioId = null,
+  categoria = 'geral'
+}) {
+
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  const d = new Date(data);
+
+  db.financeiro.lancamentos.push({
+    id: Date.now(),
+    tipo: 'despesa',
+    categoria: categoria,
+    valor: parseFloat(valor),
+    data: data,
+    mes: d.getMonth(),
+    ano: d.getFullYear(),
+    predioId: predioId,
+    observacao: descricao
+  });
+
+  save();
+}
+
+function salvarDespesa(){
+
+if (window.despesaEditandoId) {
+
+  const d = db.financeiro.lancamentos.find(
+    l => l.id === window.despesaEditandoId
+  );
+
+  d.observacao = descricao;
+  d.categoria = categoria;
+  d.valor = valor;
+  d.data = data;
+  d.mes = new Date(data).getMonth();
+  d.ano = new Date(data).getFullYear();
+  d.predioId = predioId;
+  d.fornecedor = fornecedor;
+
+  window.despesaEditandoId = null;
+
+  closeModal('modalDespesa');
+  save();
+  aplicarFiltros();
+  return;
+}
+
+  const descricao = document.getElementById('despDescricao').value;
+  const categoria = document.getElementById('despCategoria').value;
+  const valor = parseFloat(document.getElementById('despValor').value);
+  const data = document.getElementById('despData').value;
+  const fornecedor = document.getElementById('despFornecedor').value;
+  const predioId = document.getElementById('despPredio').value || null;
+
+  if(!descricao || !valor || !data){
+    alert("Preencha descrição, valor e data.");
+    return;
+  }
+
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  const d = new Date(data);
+
+  db.financeiro.lancamentos.push({
+    id: Date.now(),
+    tipo: 'despesa',
+    categoria: categoria,
+    valor: valor,
+    data: data,
+    mes: d.getMonth(),
+    ano: d.getFullYear(),
+    predioId: predioId,
+    fornecedor: fornecedor,
+    observacao: descricao
+  });
+
+  closeModal('modalDespesa');
+  save();
+  calcularFinanceiro();
+renderDespesas();
+
+}
+
+function renderDespesas(){
+const { mes, ano, predio } = getFiltrosFinanceiro();
+
+  const tbody = document.getElementById('listaDespesas');
+  if(!tbody) return;
+
+  tbody.innerHTML = '';
+
+  if (!db.financeiro.lancamentos) return;
+
+  const despesas = db.financeiro.lancamentos.filter(l => {
+
+  if (l.tipo !== 'despesa') return false;
+
+  if (mes !== 'all' && l.mes != mes) return false;
+  if (ano && l.ano != ano) return false;
+  if (predio !== 'all' && l.predioId != predio) return false;
+
+  return true;
+});
+
+
+  despesas.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b hover:bg-slate-50';
+
+    const predioNome = d.predioId
+  ? (db.predios.find(p => p.id == d.predioId)?.nome || '—')
+  : '—';
+
+tr.innerHTML = `
+  <td class="p-3">${d.observacao || '-'}</td>
+  <td class="p-3 font-medium">${predioNome}</td>
+  <td class="p-3 capitalize">${d.categoria}</td>
+  <td class="p-3">${new Date(d.data).toLocaleDateString('pt-BR')}</td>
+  <td class="p-3 text-right font-bold text-red-600">
+    R$ ${d.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+  </td>
+  <td class="p-3 text-center whitespace-nowrap">
+    <button
+      onclick="editarDespesa(${d.id})"
+      class="text-blue-600 hover:text-blue-800 mr-2"
+      title="Editar">
+      ✏️
+    </button>
+    <button
+      onclick="excluirDespesa(${d.id})"
+      class="text-red-600 hover:text-red-800"
+      title="Excluir">
+      🗑️
+    </button>
+  </td>
+`;
+
+
+    tbody.appendChild(tr);
+  });
+}
+
+function abrirModalDespesa() {
+  carregarPrediosDespesa(); // 🔥 carrega os prédios
+  openModal('modalDespesa');
+}
+
+function aplicarFiltros() {
+  calcularFinanceiro();
+  renderDespesas();
+}
+
+function excluirDespesa(id){
+  if(!confirm("Deseja realmente excluir esta despesa?")) return;
+
+  db.financeiro.lancamentos = db.financeiro.lancamentos.filter(
+    l => l.id !== id
+  );
+
+  save();
+  aplicarFiltros();
+}
+
+function editarDespesa(id){
+
+  const d = db.financeiro.lancamentos.find(l => l.id === id);
+  if(!d) return;
+
+  // preenche campos
+  document.getElementById('despDescricao').value = d.observacao || '';
+  document.getElementById('despCategoria').value = d.categoria;
+  document.getElementById('despValor').value = d.valor;
+  document.getElementById('despData').value = d.data;
+  document.getElementById('despFornecedor').value = d.fornecedor || '';
+  document.getElementById('despPredio').value = d.predioId || '';
+
+  // guarda ID da despesa sendo editada
+  window.despesaEditandoId = id;
+
+  openModal('modalDespesa');
+}
+
+function avisarInquilinoWhatsApp(nome, telefone, valor, mesIndex, ano) {
+
+  if (!telefone) {
+    alert("Este inquilino não tem telefone cadastrado.");
+    return;
+  }
+
+  const telefoneLimpo = telefone.replace(/\D/g, '');
+
+  const nomeMes = MESES[mesIndex]; // ← aqui está a correção
+
+  const mensagem =
+    `Olá ${nome}, tudo bem?\n\n` +
+    `Seu aluguel referente a ${nomeMes}/${ano} no valor de R$ ${valor} ainda está em aberto.\n\n` +
+    `Qualquer dúvida fico à disposição.`;
+
+  const url =
+    `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagem)}`;
+
+  window.open(url, '_blank');
+}
+
+function avisarInquilinoAutomatico(inq) {
+
+  if (!inq || !inq.telefone) {
+    alert("Inquilino sem telefone cadastrado.");
+    return;
+  }
+
+  const hoje = HOJE;
+  const mesAtual = hoje.getMonth();
+  const diaHoje = hoje.getDate();
+  const diaVenc = parseInt(inq.venc);
+  const pagamentoMes = inq.pagamentos[mesAtual] || { pago: false };
+  const pago = pagamentoMes && pagamentoMes.pago === true;
+
+  if (pago) {
+    alert("Este aluguel já está pago.");
+    return;
+  }
+
+  const DIAS_AVISO = 5; // ⬅️ QUANTOS DIAS ANTES AVISA
+  const diasRestantes = diaVenc - diaHoje;
+
+  const telefoneLimpo = inq.telefone.replace(/\D/g, '');
+  const nomeMes = MESES[mesAtual];
+
+  let mensagem = '';
+
+  // 🔴 CASO 1 — ATRASADO
+  if (diasRestantes < 0) {
+
+    mensagem =
+      `Olá ${inq.nome}, tudo bem?\n\n` +
+      `Seu aluguel referente a ${nomeMes}/2026 no valor de R$ ${inq.valor} está vencido.\n\n` +
+      `Por favor, nos informe sobre o pagamento.\n`;
+
+  }
+  // 🟡 CASO 2 — VAI VENCER (ATÉ X DIAS)
+  else if (diasRestantes <= DIAS_AVISO) {
+
+    mensagem =
+      `Olá ${inq.nome}, tudo bem?\n\n` +
+      `Seu aluguel de ${nomeMes}/2026 no valor de R$ ${inq.valor} vence em ${diasRestantes} dia(s).\n\n` +
+      `Qualquer dúvida, ficamos à disposição.\n`;
+
+  }
+  // 🟢 CASO 3 — AINDA FALTA MUITO TEMPO
+  else {
+    alert("Este aluguel ainda não está próximo do vencimento.");
+    return;
+  }
+
+  const url =
+    `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagem)}`;
+
+  window.open(url, '_blank');
+}
+
+function removerPredio(predioId) {
+
+  const p = db.predios.find(x => x.id === predioId);
+  if (!p) return;
+
+  const confirmar = confirm(
+    `Tem certeza que deseja excluir o prédio "${p.nome}"?\n\n` +
+    `⚠️ Isso irá remover TODAS as unidades e inquilinos deste prédio.`
+  );
+
+  if (!confirmar) return;
+
+  // remove o prédio
+  db.predios = db.predios.filter(x => x.id !== predioId);
+
+  // salva no localStorage
+  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+
+  // redesenha a tela
+  render();
+}
+
+
+</script>
+
+
+<!-- MODAL NOVA DESPESA -->
+<div id="modalDespesa" class="modal">
+  <div class="card w-[420px]">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-black text-lg uppercase">Nova despesa</h3>
+      <button class="btn btn-ghost" onclick="closeModal('modalDespesa')">✕</button>
+    </div>
+
+    <div class="space-y-4">
+
+      <div>
+        <label>Descrição</label>
+        <input id="despDescricao" class="input" placeholder="Ex: Limpeza do prédio">
+      </div>
+
+      <div>
+        <label>Categoria</label>
+        <select id="despCategoria" class="input">
+          <option value="manutencao">Manutenção</option>
+          <option value="limpeza">Limpeza</option>
+          <option value="energia">Energia</option>
+          <option value="agua">Água</option>
+          <option value="impostos">Impostos</option>
+          <option value="outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label>Valor (R$)</label>
+          <input id="despValor" type="number" step="0.01" class="input" placeholder="0,00">
+        </div>
+
+        <div>
+          <label>Data</label>
+          <input id="despData" type="date" class="input">
+        </div>
+      </div>
+
+      <div>
+        <label>Fornecedor</label>
+        <input id="despFornecedor" class="input" placeholder="Nome do fornecedor">
+      </div>
+
+      <div>
+        <label>Prédio (opcional)</label>
+        <select id="despPredio" class="input">
+          <option value="">Selecione um prédio</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="flex gap-2 mt-6">
+      <button class="btn btn-primary flex-1" onclick="salvarDespesa()">✔ Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalDespesa')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
