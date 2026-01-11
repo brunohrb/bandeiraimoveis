@@ -5,6 +5,9 @@
     <title>Bandeira's Imobiliaria Gestão Financeira • 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ADICIONE A LINHA ABAIXO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
   
@@ -460,6 +463,15 @@ label{
 
 
 <script>
+const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+
+// Inicializa o cliente Supabase
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
+
+// Agora vamos adaptar o resto do código.
+// Você pode remover a linha 'let db = ...' e a função 'save()' que usa localStorage.
+
 
     let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
 if(!db.financeiro){
@@ -1801,4 +1813,5 @@ function removerPredio(predioId) {
 </div>
 
 </body>
+
 </html>
