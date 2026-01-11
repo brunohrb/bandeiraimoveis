@@ -462,24 +462,23 @@ label{
 
 <script>
 
-    
+<script>
     // ========================================================================
     // 1. CONFIGURAÇÃO DO SUPABASE
-    //    Coloque aqui a URL e a Chave Pública (anon) do seu projeto.
     // ========================================================================
-const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+    const SUPABASE_URL = 'COLE_SUA_URL_AQUI'; // Exemplo: https://seu-projeto.supabase.co
+    const SUPABASE_KEY = 'COLE_SUA_CHAVE_ANON_PUBLIC_AQUI'; // Exemplo: eyJhbGc...
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
 
     // ========================================================================
     // 2. VARIÁVEIS GLOBAIS E CONSTANTES
     // ========================================================================
-    let db = { predios: [], lancamentos: [] }; // Objeto local para cache dos dados
+    let db = { predios: [], lancamentos: [] };
     let currentBase64 = "";
     let currentViewingPredioId = null;
-    let currentInquilino = null; // Guarda o objeto completo do inquilino atual
-    let currentUnidade = null; // Guarda o objeto completo da unidade atual
+    let currentInquilino = null;
+    let currentUnidade = null;
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     const HOJE = new Date();
 
@@ -489,7 +488,9 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
     async function carregarDadosIniciais() {
         console.log("Carregando dados do Supabase...");
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        if (document.getElementById('loadingOverlay')) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
 
         const { data: prediosData, error: prediosError } = await supabase
             .from('predios')
@@ -499,7 +500,9 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
         if (prediosError) {
             console.error('Erro ao buscar prédios:', prediosError);
             alert('Não foi possível carregar os dados dos prédios.');
-            document.getElementById('loadingOverlay').style.display = 'none';
+            if (document.getElementById('loadingOverlay')) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
             return;
         }
 
@@ -510,7 +513,9 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
         if (lancamentosError) {
             console.error('Erro ao buscar lançamentos:', lancamentosError);
             alert('Não foi possível carregar os dados financeiros.');
-            document.getElementById('loadingOverlay').style.display = 'none';
+            if (document.getElementById('loadingOverlay')) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
             return;
         }
 
@@ -519,7 +524,9 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
         console.log("Dados carregados:", db);
         render();
-        document.getElementById('loadingOverlay').style.display = 'none';
+        if (document.getElementById('loadingOverlay')) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
     }
 
     async function addPredio() {
@@ -800,7 +807,7 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
     }
 
     // ========================================================================
-    // 4. FUNÇÕES DE RENDERIZAÇÃO E UI (INTERFACE DO USUÁRIO)
+    // 4. FUNÇÕES DE RENDERIZAÇÃO E UI
     // ========================================================================
 
     function render() {
@@ -847,7 +854,7 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
             </div>`;
         }).join('');
 
-        if (document.getElementById('viewFinanceiro').style.display !== 'none') {
+        if (document.getElementById('viewFinanceiro') && document.getElementById('viewFinanceiro').style.display !== 'none') {
             aplicarFiltros();
         }
     }
@@ -1025,7 +1032,7 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
     }
 
     // ========================================================================
-    // 5. FUNÇÕES AUXILIARES E DE UI (SEM ALTERAÇÕES SIGNIFICATIVAS)
+    // 5. FUNÇÕES AUXILIARES E DE UI
     // ========================================================================
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -1036,13 +1043,17 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
     function closeModalPagamentos() {
         closeModal('modalPagamentos');
     }
-    document.getElementById('inqArquivo').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onloadend = () => currentBase64 = reader.result;
-        reader.readAsDataURL(file);
-    });
+    
+    if (document.getElementById('inqArquivo')) {
+        document.getElementById('inqArquivo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = () => currentBase64 = reader.result;
+            reader.readAsDataURL(file);
+        });
+    }
+    
     function montarContratoTexto() {
         const p = db.predios.find(x => x.id == document.getElementById('inqPredioId').value);
         const u = p.unidades.find(x => x.id == document.getElementById('inqUnidadeId').value);
@@ -1060,6 +1071,7 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
         return `CONTRATO DE LOCAÇÃO RESIDENCIAL\n\nLOCADOR: [SEU NOME/NOME DA EMPRESA], com sede em [SEU ENDEREÇO], doravante denominado LOCADOR.\n\nLOCATÁRIO(A): ${i.nome.toUpperCase()}, ${i.nacionalidade}, ${i.profissao}, portador(a) do RG nº ${i.rg} e do CPF nº ${i.cpf}, residente e domiciliado(a) em ${i.endereco}.\n\nIMÓVEL: A unidade ${u.nome}, localizada no prédio ${p.nome}.\n\nCLÁUSULA 1ª - O valor do aluguel mensal é de R$ ${parseFloat(i.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}.\n\nCLÁUSULA 2ª - O aluguel deverá ser pago até o dia ${i.venc} de cada mês.\n\nCLÁUSULA 3ª - O locatário deposita neste ato o valor de R$ ${parseFloat(i.caucao).toLocaleString('pt-BR', {minimumFractionDigits: 2})} a título de caução.\n\nE, por estarem assim justos e contratados, assinam o presente contrato em duas vias de igual teor.\n\n[SUA CIDADE], ${new Date().toLocaleDateString('pt-BR')}.\n\n_________________________\nLOCADOR\n\n_________________________\nLOCATÁRIO(A): ${i.nome.toUpperCase()}`;
     }
+    
     function gerarContratoPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -1067,12 +1079,21 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
         doc.text(texto, 10, 10);
         doc.save('contrato.pdf');
     }
+    
     function atualizarTotalBaixa() {
         const aluguel = parseFloat(document.getElementById('bpAluguel').value) || 0;
         const juros = parseFloat(document.getElementById('bpJuros').value) || 0;
         document.getElementById('bpTotal').innerText = `R$ ${(aluguel + juros).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     }
-    function getFiltrosFinanceiro() { return { mes: document.getElementById('filtroMes').value, ano: document.getElementById('filtroAno').value, predio: document.getElementById('filtroPredio').value }; }
+    
+    function getFiltrosFinanceiro() { 
+        return { 
+            mes: document.getElementById('filtroMes').value, 
+            ano: document.getElementById('filtroAno').value, 
+            predio: document.getElementById('filtroPredio').value 
+        }; 
+    }
+    
     function calcularFinanceiro() {
         const { mes, ano, predio } = getFiltrosFinanceiro();
         let alugueisRecebidos = 0, jurosRecebidos = 0, caucaoSaldo = 0, contasPagar = 0, inadimplencia = 0, lucro = 0;
@@ -1120,17 +1141,19 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
         lucro = (alugueisRecebidos + jurosRecebidos) - contasPagar;
 
-        document.getElementById('finAlugueis').innerText = `R$ ${alugueisRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('finJuros').innerText = `R$ ${jurosRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('finCaucao').innerText = `R$ ${caucaoSaldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('finDespesas').innerText = `R$ ${contasPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('finInadimplencia').innerText = `R$ ${inadimplencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('finLucro').innerText = `R$ ${lucro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finAlugueis')) document.getElementById('finAlugueis').innerText = `R$ ${alugueisRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finJuros')) document.getElementById('finJuros').innerText = `R$ ${jurosRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finCaucao')) document.getElementById('finCaucao').innerText = `R$ ${caucaoSaldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finDespesas')) document.getElementById('finDespesas').innerText = `R$ ${contasPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finInadimplencia')) document.getElementById('finInadimplencia').innerText = `R$ ${inadimplencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (document.getElementById('finLucro')) document.getElementById('finLucro').innerText = `R$ ${lucro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     }
+    
     function aplicarFiltros() {
         renderDespesas();
         calcularFinanceiro();
     }
+    
     function setupFiltros() {
         const anoAtual = HOJE.getFullYear();
         const filtroAno = document.getElementById('filtroAno');
@@ -1150,19 +1173,25 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
             despPredio.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
         });
     }
+    
     function abrirModalDespesa() {
         document.getElementById('despForm').reset();
         window.despesaEditandoId = null;
         openModal('modalDespesa');
     }
+    
     function showView(viewId) {
         ['viewDashboard', 'viewFinanceiro'].forEach(id => {
-            document.getElementById(id).style.display = 'none';
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
         });
-        document.getElementById(viewId).style.display = 'block';
-        if (viewId === 'viewFinanceiro') {
-            setupFiltros();
-            aplicarFiltros();
+        const viewEl = document.getElementById(viewId);
+        if (viewEl) {
+            viewEl.style.display = 'block';
+            if (viewId === 'viewFinanceiro') {
+                setupFiltros();
+                aplicarFiltros();
+            }
         }
     }
 
@@ -1170,8 +1199,6 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
     // 6. INICIALIZAÇÃO
     // ========================================================================
     document.addEventListener('DOMContentLoaded', carregarDadosIniciais);
-
-
 </script>
 
 
@@ -1237,4 +1264,5 @@ const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
 </body>
 </html>
+
 
