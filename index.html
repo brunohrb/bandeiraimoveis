@@ -6,8 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
-  
+
+    <script>
+const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+
+  const supabase = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+        console.log("Supabase conectado:", supabase);
+</script>
+
+    
   <style>
 .card-full {
   max-width: 100% !important;
@@ -1802,3 +1815,4 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
