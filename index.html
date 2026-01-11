@@ -1764,6 +1764,31 @@ function removerPredio(predioId) {
 }
 testeSupabase();
 
+    async function enviarPrimeiroPredioParaSupabase() {
+
+  if (!db.predios.length) {
+    alert("Não existe nenhum prédio no banco local.");
+    return;
+  }
+
+  const p = db.predios[0];
+
+  const { error } = await supabaseClient
+    .from('predios')
+    .insert({
+      id: p.id,
+      nome: p.nome
+    });
+
+  if (error) {
+    console.error("Erro ao enviar prédio:", error);
+    alert("Erro ao enviar prédio (veja o console)");
+  } else {
+    alert("Prédio enviado com sucesso para o Supabase!");
+  }
+}
+// enviarPrimeiroPredioParaSupabase();
+    
 </script>
 
 
@@ -1829,6 +1854,7 @@ testeSupabase();
 
 </body>
 </html>
+
 
 
 
