@@ -9,17 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
 
-    <script>
-const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+ <script>
+  const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
-  const supabase = supabase.createClient(
+  const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
-        console.log("Supabase conectado:", supabase);
-</script>
 
+  console.log("Supabase conectado:", supabaseClient);
+</script>
     
   <style>
 .card-full {
@@ -1751,7 +1751,7 @@ function removerPredio(predioId) {
 
     async function testeSupabase() {
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('predios')
     .select('*');
 
@@ -1829,5 +1829,6 @@ testeSupabase();
 
 </body>
 </html>
+
 
 
