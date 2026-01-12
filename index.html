@@ -731,11 +731,20 @@ if (pagamentoMes && pagamentoMes.pago === true) {
 <td class="text-center">${financeiroTag}</td>
 
                     <td>${contratoBtn}</td> 
-                    <td class="text-right">
-                        <button onclick="editInquilino(${p.id}, '${u.id}')" class="text-blue-600 font-black text-xs uppercase hover:underline">
-                            <i class="fas fa-edit"></i> ${u.inquilino ? 'Editar' : 'Alugar'}
-                        </button>
-                    </td>
+                    <td class="text-right space-x-2">
+  <button
+    onclick="abrirHistoricoUnidade(${p.id}, '${u.nome}')"
+    class="text-slate-600 font-bold text-xs uppercase hover:underline">
+    📄 Histórico
+  </button>
+
+  <button
+    onclick="editInquilino(${p.id}, '${u.id}')"
+    class="text-blue-600 font-black text-xs uppercase hover:underline">
+    <i class="fas fa-edit"></i> ${u.inquilino ? 'Editar' : 'Alugar'}
+  </button>
+</td>
+
                 </tr>
             `;
         }).join('');
@@ -1958,6 +1967,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
