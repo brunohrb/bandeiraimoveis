@@ -120,7 +120,6 @@ label{
   📊 Financeiro
 </div>
 
-        <div onclick="localStorage.clear(); location.reload();" class="p-3 text-slate-400 hover:text-white cursor-pointer flex items-center gap-3 mt-10"><i class="fas fa-trash"></i> Resetar Sistema</div>
     </nav>
 </div>
 
@@ -482,19 +481,26 @@ async function carregarSistema() {
 
   if (data && data.dados) {
     db = data.dados;
+  } else {
+    // primeira vez (banco vazio)
+    db = {
+      predios: [],
+      financeiro: {
+        contasReceber: [],
+        contasPagar: [],
+        caixa: [],
+        lancamentos: []
+      },
+      despesas: []
+    };
   }
 
+  gerarContasReceber();
   render();
 }
 
+
 window.onload = carregarSistema;
-if(!db.financeiro){
-  db.financeiro = {
-    contasReceber: [],
-    contasPagar: [],
-    caixa: []
-  };
-}
 
 // ================================
 // MIGRAÇÃO SEGURA DO BANCO
@@ -570,6 +576,7 @@ async function save() {
         db.predios.push({ id: Date.now(), nome, unidades });
         document.getElementById('pNome').value = ''; document.getElementById('pUnidades').value = '';
         closeModal('modalPredio');
+        save();
     }
 
     function viewPredio(predioId) {
@@ -890,8 +897,6 @@ function adicionarUnidade(predioId){
             `;
         }).join('');
     }
-
-    render();
 
  
 function montarContratoTexto() {
@@ -1445,13 +1450,6 @@ status:
 // INICIALIZA O SISTEMA AO ABRIR A PÁGINA
 
 // 1️⃣ garante que o financeiro existe
-if(!db.financeiro){
-  db.financeiro = {
-    contasReceber: [],
-    contasPagar: [],
-    caixa: []
-  };
-}
 
 // 2️⃣ gera as contas a receber
 gerarContasReceber();
@@ -1748,7 +1746,6 @@ function removerPredio(predioId) {
   db.predios = db.predios.filter(x => x.id !== predioId);
 
   // salva no localStorage
-  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
 
   // redesenha a tela
   render();
@@ -1835,5 +1832,6 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
