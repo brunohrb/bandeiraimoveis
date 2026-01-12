@@ -291,7 +291,7 @@ label{
 
 <!-- MODAL NOVO PREDIO -->
 <div id="modalPredio" class="modal">
-    <div class="card w-[450px]">
+<div class="card w-[95%] max-w-[450px]">
         <h3 class="font-black text-xl mb-6">CADASTRAR PRÉDIO</h3>
         <label class="text-xs font-bold text-slate-400 uppercase">Nome do Condomínio</label>
         <input id="pNome" class="input mb-4" placeholder="Ex: Edifício Mar Azul">
@@ -306,7 +306,7 @@ label{
 
 <!-- MODAL LISTA INQUILINOS (DETALHE DO PRÉDIO) -->
 <div id="modalDetalhe" class="modal">
-    <div class="card w-[90%] max-w-5xl max-h-[80vh] overflow-y-auto">
+<div class="card w-[95%] max-w-5xl max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
             <h3 id="detalheTitulo" class="font-black text-2xl uppercase italic"></h3>
             <button class="btn btn-ghost" onclick="closeModal('modalDetalhe')"><i class="fas fa-times"></i> FECHAR</button>
@@ -331,7 +331,7 @@ label{
 
 <!-- MODAL EDITAR/CADASTRAR INQUILINO E PAGAMENTOS -->
 <div id="modalInquilino" class="modal">
-    <div class="card w-[450px]">
+<div class="card w-[95%] max-w-[450px]">
         <h3 id="inqTitulo" class="font-black text-xl mb-6 uppercase">GERIR INQUILINO</h3>
         <input type="hidden" id="inqUnidadeId">
         <input type="hidden" id="inqPredioId">
@@ -395,7 +395,7 @@ label{
 
 <!-- MODAL PAGAMENTOS -->
 <div id="modalPagamentos" class="modal">
-    <div class="card w-[450px]">
+<div class="card w-[95%] max-w-[450px]">
         <div class="flex justify-between items-center mb-6">
             <h3 id="pagamentosTitulo" class="font-black text-xl uppercase">Histórico 2026</h3>
             <button class="btn btn-ghost" onclick="closeModalPagamentos()"><i class="fas fa-times"></i> FECHAR</button>
@@ -491,10 +491,17 @@ label{
     
 <script>
 
+    // ================================
+// MENU MOBILE (SIDEBAR)
+// ================================
+function toggleMenu() {
+  document.querySelector('.sidebar').classList.toggle('open');
+}
+
 const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
 
-const supabaseClient = window.supabase.createClient(
+    const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
@@ -1858,6 +1865,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
