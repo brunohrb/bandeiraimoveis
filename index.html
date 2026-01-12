@@ -163,6 +163,13 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   📊 Financeiro
 </div>
 
+        <div
+  onclick="abrirRelatorioClientes(); fecharMenuMobile()"
+  class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+  👤 Relatório de Clientes
+</div>
+
+        
     </nav>
 </div>
 
@@ -297,7 +304,65 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
 </div>
 
+    
+<!-- VIEW RELATÓRIO DE CLIENTES -->
+<div id="viewRelatorioClientes" class="hidden">
 
+  <h1 class="text-3xl font-black mb-6">
+    RELATÓRIO DE CLIENTES
+  </h1>
+
+  <!-- BUSCA -->
+  <div class="mb-6 max-w-xl">
+    <label class="text-xs font-bold uppercase text-slate-400">
+      Buscar cliente
+    </label>
+    <input
+      id="buscaCliente"
+      class="input"
+      placeholder="Digite o nome do cliente"
+      oninput="buscarClientesRelatorio()"
+    />
+
+    <div
+      id="listaClientesBusca"
+      class="bg-white border rounded-lg mt-2 shadow hidden max-h-60 overflow-y-auto">
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultadoCliente" class="hidden">
+
+    <h2 id="tituloCliente" class="text-xl font-black mb-4"></h2>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+          <tr>
+            <th class="p-2 text-left">Data</th>
+            <th class="p-2 text-left">Prédio</th>
+            <th class="p-2 text-left">Unidade</th>
+            <th class="p-2 text-left">Tipo</th>
+            <th class="p-2 text-right">Valor</th>
+            <th class="p-2 text-left">Obs.</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaRelatorioCliente"></tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-between items-center mt-4">
+      <div id="resumoCliente" class="font-black"></div>
+      <button class="btn btn-primary" onclick="exportarRelatorioClientePDF()">
+        📄 Exportar PDF
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+    
 <div id="viewPortfolio">
     <header class="flex justify-between items-center mb-8">
         <div>
@@ -1579,6 +1644,17 @@ function adicionarDespesa({
   save();
 }
 
+    function abrirRelatorioClientes() {
+
+  document.getElementById('viewPortfolio').style.display = 'none';
+  document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewRelatorioClientes').classList.remove('hidden');
+
+  document.getElementById('buscaCliente').value = '';
+  document.getElementById('listaClientesBusca').classList.add('hidden');
+  document.getElementById('resultadoCliente').classList.add('hidden');
+}
+    
 function salvarDespesa() {
 
   const descricao = document.getElementById('despDescricao').value;
@@ -2092,6 +2168,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     
 </body>
 </html>
+
 
 
 
