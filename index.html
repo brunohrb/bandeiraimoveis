@@ -550,17 +550,40 @@ localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
         }
     }
 
-    function addPredio() {
-        const nome = document.getElementById('pNome').value;
-        const unidadesTxt = document.getElementById('pUnidades').value;
-        if(!nome || !unidadesTxt) return;
-        const unidades = unidadesTxt.split(',').map(u => ({
-            id: Math.random().toString(36).substr(2, 9), nome: u.trim(), status: 'vago', inquilino: null
-        }));
-        db.predios.push({ id: Date.now(), nome, unidades });
-        document.getElementById('pNome').value = ''; document.getElementById('pUnidades').value = '';
-        closeModal('modalPredio');
-    }
+  async function addPredio() {
+
+  const nome = document.getElementById('pNome').value;
+  const unidadesTxt = document.getElementById('pUnidades').value;
+
+  if (!nome || !unidadesTxt) {
+    alert("Preencha nome e unidades");
+    return;
+  }
+
+  const id = Date.now();
+
+  const { error } = await supabaseClient
+    .from('predios')
+    .insert({
+      id: id,
+      nome: nome
+    });
+
+  if (error) {
+    console.error("Erro ao salvar prédio:", error);
+    alert("Erro ao salvar no Supabase (veja o console)");
+    return;
+  }
+
+  // limpa formulário
+  document.getElementById('pNome').value = '';
+  document.getElementById('pUnidades').value = '';
+
+  closeModal('modalPredio');
+
+  // recarrega tudo do Supabase
+  await carregarPrediosDoSupabase();
+}
 
     function viewPredio(predioId) {
         currentViewingPredioId = predioId; 
@@ -1888,3 +1911,4 @@ async function carregarPrediosDoSupabase() {
 
 </body>
 </html>
+
