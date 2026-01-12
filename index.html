@@ -791,10 +791,6 @@ const caucaoValor = moedaParaNumero(
   document.getElementById('inqCaucao').value
 );
 
-const caucaoValor = moedaParaNumero(
-  document.getElementById('inqCaucao').value
-);
-
 const jaExisteCaucao = db.financeiro.lancamentos?.some(
   l =>
     l.categoria === 'caucao' &&
@@ -1856,9 +1852,7 @@ function removerPredio(predioId) {
   alert("Financeiro zerado para demonstração.");
 }
 
-
 </script>
-
 
 <!-- MODAL NOVA DESPESA -->
 <div id="modalDespesa" class="modal">
@@ -1920,9 +1914,9 @@ function removerPredio(predioId) {
   </div>
 </div>
     
-</script>
 </body>
 </html>
+
 
 
 
