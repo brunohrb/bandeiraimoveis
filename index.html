@@ -1557,13 +1557,7 @@ function adicionarDespesa({
   save();
 }
 
-function salvarDespesa(){
-
-if (window.despesaEditandoId) {
-
-  const d = db.financeiro.lancamentos.find(
-    l => l.id === window.despesaEditandoId
-  );
+function salvarDespesa() {
 
   const descricao = document.getElementById('despDescricao').value;
   const categoria = document.getElementById('despCategoria').value;
@@ -1577,31 +1571,61 @@ if (window.despesaEditandoId) {
     return;
   }
 
-  d.observacao = descricao;
-  d.categoria = categoria;
-  d.valor = valor;
-  d.data = data;
-  d.mes = new Date(data).getMonth();
-  d.ano = new Date(data).getFullYear();
-  d.predioId = predioId;
-  d.fornecedor = fornecedor;
+  // =========================
+  // EDITAR DESPESA EXISTENTE
+  // =========================
+  if (window.despesaEditandoId) {
 
-  window.despesaEditandoId = null;
+    const d = db.financeiro.lancamentos.find(
+      l => l.id === window.despesaEditandoId
+    );
+
+    if (!d) return;
+
+    d.observacao = descricao;
+    d.categoria = categoria;
+    d.valor = valor;
+    d.data = data;
+    d.mes = new Date(data).getMonth();
+    d.ano = new Date(data).getFullYear();
+    d.predioId = predioId;
+    d.fornecedor = fornecedor;
+
+    window.despesaEditandoId = null;
+
+    closeModal('modalDespesa');
+    save();
+    aplicarFiltros();
+    return;
+  }
+
+  // =========================
+  // NOVA DESPESA
+  // =========================
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  const d = new Date(data);
+
+  db.financeiro.lancamentos.push({
+    id: Date.now(),
+    tipo: 'despesa',
+    categoria: categoria,
+    valor: valor,
+    data: data,
+    mes: d.getMonth(),
+    ano: d.getFullYear(),
+    predioId: predioId,
+    fornecedor: fornecedor,
+    observacao: descricao
+  });
 
   closeModal('modalDespesa');
   save();
   aplicarFiltros();
-  return;
 }
 
-
-  window.despesaEditandoId = null;
-
-  closeModal('modalDespesa');
-  save();
-  aplicarFiltros();
-  return;
-}
 
   const descricao = document.getElementById('despDescricao').value;
   const categoria = document.getElementById('despCategoria').value;
