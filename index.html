@@ -384,12 +384,21 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 <textarea id="inqEndereco" class="input mb-3"></textarea>
 
 <label class="text-xs font-bold">Caução (R$)</label>
-<input id="inqCaucao" class="input mb-3">
+<input
+  id="inqCaucao"
+  class="input mb-3"
+  inputmode="numeric"
+  oninput="this.value = formatarMoedaBR(this.value)">
 
 <div class="grid grid-cols-2 gap-3 mb-3">
   <div>
     <label class="text-xs font-bold">Aluguel (R$)</label>
-    <input id="inqValor" class="input" placeholder="Ex: 1.350,00">
+<input
+  id="inqValor"
+  class="input"
+  inputmode="numeric"
+  placeholder="Ex: 1.350,00"
+  oninput="this.value = formatarMoedaBR(this.value)">
   </div>
   <div>
     <label class="text-xs font-bold">Dia de vencimento</label>
@@ -509,9 +518,25 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </div>
 </div>
 
-
-    
 <script>
+
+    <script>
+function formatarMoedaBR(valor) {
+  valor = valor.replace(/\D/g, '');
+  valor = (parseInt(valor) / 100).toFixed(2);
+  return valor
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function moedaParaNumero(valor) {
+  if (!valor) return 0;
+  return parseFloat(
+    valor.replace(/\./g, '').replace(',', '.')
+  ) || 0;
+}
+</script>
+
 
         function fecharMenuMobile() {
   const sidebar = document.querySelector('.sidebar');
@@ -762,6 +787,34 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
   contrato: currentBase64 || (u.inquilino ? u.inquilino.contrato : ""),
   pagamentos: pagamentos
 };
+
+    // ================================
+// REGISTRO DE CAUÇÃO (FINANCEIRO)
+// ================================
+const caucaoValor = moedaParaNumero(
+  document.getElementById('inqCaucao').value
+);
+
+if (caucaoValor > 0) {
+
+  if (!db.financeiro.lancamentos) {
+    db.financeiro.lancamentos = [];
+  }
+
+  db.financeiro.lancamentos.push({
+    id: Date.now(),
+    tipo: 'receita',
+    categoria: 'caucao',
+    valor: caucaoValor,
+    data: new Date().toISOString().split('T')[0],
+    mes: new Date().getMonth(),
+    ano: 2026,
+    predioId: pId,
+    unidade: u.nome,
+    inquilinoNome: document.getElementById('inqNome').value,
+    observacao: 'Caução recebida'
+  });
+}
 
 
 // ================================
@@ -1405,7 +1458,7 @@ document.getElementById('finReceber').innerText =
 // ================================
 // LUCRO
 // ================================
-lucro = alugueisRecebidos + caucaoSaldo - contasPagar;
+lucro = alugueisRecebidos + caucaoFiltrada + jurosRecebidos - contasPagar;
 
 document.getElementById('finLucro').innerText =
   'R$ ' + lucro.toLocaleString('pt-BR', {
@@ -1893,6 +1946,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
