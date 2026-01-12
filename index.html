@@ -1551,25 +1551,26 @@ function carregarFiltroPredios(){
 }
 
 function abrirFinanceiro(){
-  gerarContasReceber(); // 🔥 garante dados atualizados
 
   document.getElementById('viewPortfolio').style.display = 'none';
+  document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewFinanceiro').classList.remove('hidden');
 
+  gerarContasReceber();
   carregarFiltroPredios();
   calcularFinanceiro();
-renderDespesas();
-
+  renderDespesas();
 }
+
 
 function voltarParaPortfolio(){
 
-
-// GARANTE ESTADO INICIAL CORRETO
-document.getElementById('viewPortfolio').style.display = 'block';
-document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewPortfolio').style.display = 'block';
+  document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewRelatorioClientes').classList.add('hidden');
 
 }
+
 
 // ================================
 // ESTADO INICIAL DA TELA (FORÇADO)
@@ -2270,6 +2271,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     
 </body>
 </html>
+
 
 
 
