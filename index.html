@@ -6,21 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
-
- <script>
-  const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
-
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-  console.log("Supabase conectado:", supabaseClient);
-</script>
-    
+  
   <style>
 .card-full {
   max-width: 100% !important;
@@ -131,7 +118,7 @@ label{
   📊 Financeiro
 </div>
 
-        <div onclick="resetarSistema();" class="p-3 text-slate-400 hover:text-white cursor-pointer flex items-center gap-3 mt-10"><i class="fas fa-trash"></i> Resetar Sistema</div>
+        <div onclick="localStorage.clear(); location.reload();" class="p-3 text-slate-400 hover:text-white cursor-pointer flex items-center gap-3 mt-10"><i class="fas fa-trash"></i> Resetar Sistema</div>
     </nav>
 </div>
 
@@ -474,7 +461,49 @@ label{
 
 <script>
 
-let db = { predios: [] };
+    let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
+if(!db.financeiro){
+  db.financeiro = {
+    contasReceber: [],
+    contasPagar: [],
+    caixa: []
+  };
+}
+
+// ================================
+// MIGRAÇÃO SEGURA DO BANCO
+// ================================
+
+// garante estrutura de despesas
+if (!db.despesas) {
+  db.despesas = [];
+}
+
+// ajusta pagamentos antigos (true/false) para objeto
+db.predios.forEach(predio => {
+  predio.unidades.forEach(unidade => {
+    if (unidade.inquilino && Array.isArray(unidade.inquilino.pagamentos)) {
+      unidade.inquilino.pagamentos = unidade.inquilino.pagamentos.map(p => {
+        if (p === true) {
+          return {
+            pago: true,
+            aluguel: parseFloat(unidade.inquilino.valor || 0),
+            juros: 0,
+            data: null
+          };
+        }
+        if (p === false) {
+          return { pago: false };
+        }
+        return p; // já é objeto
+      });
+    }
+  });
+});
+
+// salva migração automaticamente
+localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+
     let currentBase64 = "";
     let currentViewingPredioId = null; 
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -486,10 +515,10 @@ let db = { predios: [] };
         reader.onloadend = () => currentBase64 = reader.result;
         if(file) reader.readAsDataURL(file);
     });
-    
-async function save() {
-  gerarContasReceber();
-  await salvarNoSupabase();
+
+  function save() {
+  gerarContasReceber(); // 🔥 ATUALIZA CONTAS A RECEBER
+  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
   render();
 }
 
@@ -508,55 +537,17 @@ async function save() {
         }
     }
 
-async function addPredio() {
-  const nome = document.getElementById('pNome').value;
-  const unidadesTxt = document.getElementById('pUnidades').value;
-
-  if (!nome || !unidadesTxt) {
-    alert("Preencha nome e unidades");
-    return;
-  }
-
-  // 1. Cria o prédio
-  const { data: predioData, error: predioError } = await supabaseClient
-    .from('predios')
-    .insert({ nome: nome })
-    .select()
-    .single();
-
-  if (predioError) {
-    console.error("Erro ao salvar prédio:", predioError);
-    alert("Erro ao salvar no Supabase");
-    return;
-  }
-
-  // 2. Cria as unidades
-  const unidades = unidadesTxt.split(',').map(u => ({
-    nome: u.trim(),
-    predio_id: predioData.id,
-    status: 'vago'
-  }));
-
-  const { error: unidadesError } = await supabaseClient
-    .from('unidades')
-    .insert(unidades);
-
-  if (unidadesError) {
-    console.error("Erro ao criar unidades:", unidadesError);
-    alert("Erro ao criar unidades");
-    return;
-  }
-
-  // Limpa formulário
-  document.getElementById('pNome').value = '';
-  document.getElementById('pUnidades').value = '';
-
-  closeModal('modalPredio');
-
-  // Recarrega tudo
-  async await carregarPrediosDoSupabase();
-}
-
+    function addPredio() {
+        const nome = document.getElementById('pNome').value;
+        const unidadesTxt = document.getElementById('pUnidades').value;
+        if(!nome || !unidadesTxt) return;
+        const unidades = unidadesTxt.split(',').map(u => ({
+            id: Math.random().toString(36).substr(2, 9), nome: u.trim(), status: 'vago', inquilino: null
+        }));
+        db.predios.push({ id: Date.now(), nome, unidades });
+        document.getElementById('pNome').value = ''; document.getElementById('pUnidades').value = '';
+        closeModal('modalPredio');
+    }
 
     function viewPredio(predioId) {
         currentViewingPredioId = predioId; 
@@ -652,7 +643,7 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
         openModal('modalInquilino');
     }
 
-     async function saveInquilino() {
+    function saveInquilino() {
         const pId = parseInt(document.getElementById('inqPredioId').value);
         const uId = document.getElementById('inqUnidadeId').value;
         const p = db.predios.find(x => x.id === pId);
@@ -1401,11 +1392,9 @@ document.getElementById('viewFinanceiro').classList.add('hidden');
 // ================================
 // ESTADO INICIAL DA TELA (FORÇADO)
 // ================================
-window.onload = async function () {
+window.onload = function () {
   document.getElementById('viewPortfolio').style.display = 'block';
   document.getElementById('viewFinanceiro').classList.add('hidden');
-
-  await carregarPrediosDoSupabase();
 };
 
 function gerarContasReceber(){
@@ -1725,7 +1714,7 @@ function avisarInquilinoAutomatico(inq) {
   window.open(url, '_blank');
 }
 
-async function removerPredio(predioId) {
+function removerPredio(predioId) {
 
   const p = db.predios.find(x => x.id === predioId);
   if (!p) return;
@@ -1741,97 +1730,13 @@ async function removerPredio(predioId) {
   db.predios = db.predios.filter(x => x.id !== predioId);
 
   // salva no localStorage
-  await salvarNoSupabase();
+  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
 
   // redesenha a tela
   render();
 }
 
-    async function testeSupabase() {
 
-  const { data, error } = await supabaseClient
-    .from('predios')
-    .select('*');
-
-  if (error) {
-    console.error("Erro ao ler Supabase:", error);
-  } else {
-    console.log("Dados vindos do Supabase (predios):", data);
-  }
-
-}
-testeSupabase();
-
-    async function enviarPrimeiroPredioParaSupabase() {
-
-  if (!db.predios.length) {
-    alert("Não existe nenhum prédio no banco local.");
-    return;
-  }
-
-  const p = db.predios[0];
-
-  const { error } = await supabaseClient
-    .from('predios')
-    .upsert({
-      id: p.id,
-      nome: p.nome
-    });
-
-  if (error) {
-    console.error("Erro ao enviar prédio:", error);
-    alert("Erro ao enviar prédio (veja o console)");
-  } else {
-    alert("Prédio enviado com sucesso para o Supabase!");
-  }
-}
-// enviarPrimeiroPredioParaSupabase();
-
-async function carregarPrediosDoSupabase() {
-
-  const { data, error } = await supabaseClient
-    .from('predios')
-    .select('*')
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    console.error("Erro ao carregar prédios:", error);
-    return;
-  }
-
-  // se não tiver nada no Supabase, não faz nada
-  if (!data || !data.length) {
-    console.log("Nenhum prédio no Supabase ainda.");
-    return;
-  }
-
-  // monta o db local a partir do Supabase
-  db.predios = data.map(p => ({
-    id: p.id,
-    nome: p.nome,
-    unidades: [] // por enquanto vazio
-  }));
-
-  // salva no localStorage para o resto do sistema funcionar
-  await salvarNoSupabase();
-
-  render();
-}
-
-async function salvarNoSupabase() {
-  // Aqui você salva os dados no Supabase
-  // Por enquanto, deixe como está (será implementado depois)
-  console.log('Dados salvos:', db);
-}
-
-async function carregarDoSupabase() {
-  const { data, error } = await supabase.from('predios').select('*, unidades(*, inquilinos(*))');
-  if (!error && data) {
-    db.predios = data;
-  }
-}
-
-    
 </script>
 
 
@@ -1897,7 +1802,3 @@ async function carregarDoSupabase() {
 
 </body>
 </html>
-
-
-
-
