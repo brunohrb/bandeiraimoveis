@@ -554,7 +554,7 @@ async function addPredio() {
   closeModal('modalPredio');
 
   // Recarrega tudo
-  await carregarPrediosDoSupabase();
+  async await carregarPrediosDoSupabase();
 }
 
 
@@ -652,7 +652,7 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
         openModal('modalInquilino');
     }
 
-    function saveInquilino() {
+     async function saveInquilino() {
         const pId = parseInt(document.getElementById('inqPredioId').value);
         const uId = document.getElementById('inqUnidadeId').value;
         const p = db.predios.find(x => x.id === pId);
@@ -1725,7 +1725,7 @@ function avisarInquilinoAutomatico(inq) {
   window.open(url, '_blank');
 }
 
-function removerPredio(predioId) {
+async function removerPredio(predioId) {
 
   const p = db.predios.find(x => x.id === predioId);
   if (!p) return;
@@ -1897,6 +1897,7 @@ async function carregarDoSupabase() {
 
 </body>
 </html>
+
 
 
 
