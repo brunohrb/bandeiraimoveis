@@ -519,8 +519,6 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
 <script>
-
-    <script>
 function formatarMoedaBR(valor) {
   valor = valor.replace(/\D/g, '');
   valor = (parseInt(valor) / 100).toFixed(2);
@@ -536,6 +534,7 @@ function moedaParaNumero(valor) {
   ) || 0;
 }
 </script>
+  
 
 
         function fecharMenuMobile() {
@@ -815,21 +814,6 @@ if (caucaoValor > 0) {
     observacao: 'Caução recebida'
   });
 }
-
-
-// ================================
-// REGISTRO DE CAUÇÃO (FINANCEIRO)
-// ================================
-
-// ================================
-// REGISTRO DE CAUÇÃO (FINANCEIRO)
-// ================================
-const caucaoValor = parseFloat(document.getElementById('inqCaucao').value) || 0;
-
-
-
-        
-
 
         
         u.status = 'ocupado';
@@ -1339,21 +1323,6 @@ let caucaoFiltrada = 0;
 
 
 // ================================
-// CAUÇÃO — SOMA REAL POR INQUILINO
-// ================================
-caucaoSaldo = 0;
-
-db.predios.forEach(predio => {
-  predio.unidades.forEach(u => {
-    if (u.status === 'ocupado' && u.inquilino) {
-      caucaoSaldo += parseFloat(u.inquilino.caucao || 0);
-
-
-    }
-  });
-});
-
-// ================================
 // INADIMPLÊNCIA REAL (VENCEU E NÃO PAGOU)
 // ================================
 inadimplencia = 0;
@@ -1458,7 +1427,7 @@ document.getElementById('finReceber').innerText =
 // ================================
 // LUCRO
 // ================================
-lucro = alugueisRecebidos + caucaoFiltrada + jurosRecebidos - contasPagar;
+lucro = alugueisRecebidos + jurosRecebidos + caucaoFiltrada - contasPagar;
 
 document.getElementById('finLucro').innerText =
   'R$ ' + lucro.toLocaleString('pt-BR', {
@@ -1946,6 +1915,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
