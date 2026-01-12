@@ -474,49 +474,7 @@ label{
 
 <script>
 
-    let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
-if(!db.financeiro){
-  db.financeiro = {
-    contasReceber: [],
-    contasPagar: [],
-    caixa: []
-  };
-}
-
-// ================================
-// MIGRAÇÃO SEGURA DO BANCO
-// ================================
-
-// garante estrutura de despesas
-if (!db.despesas) {
-  db.despesas = [];
-}
-
-// ajusta pagamentos antigos (true/false) para objeto
-db.predios.forEach(predio => {
-  predio.unidades.forEach(unidade => {
-    if (unidade.inquilino && Array.isArray(unidade.inquilino.pagamentos)) {
-      unidade.inquilino.pagamentos = unidade.inquilino.pagamentos.map(p => {
-        if (p === true) {
-          return {
-            pago: true,
-            aluguel: parseFloat(unidade.inquilino.valor || 0),
-            juros: 0,
-            data: null
-          };
-        }
-        if (p === false) {
-          return { pago: false };
-        }
-        return p; // já é objeto
-      });
-    }
-  });
-});
-
-// salva migração automaticamente
-localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
-
+let db = { predios: [] };
     let currentBase64 = "";
     let currentViewingPredioId = null; 
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -528,10 +486,10 @@ localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
         reader.onloadend = () => currentBase64 = reader.result;
         if(file) reader.readAsDataURL(file);
     });
-
-  function save() {
-  gerarContasReceber(); // 🔥 ATUALIZA CONTAS A RECEBER
-  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+    
+async function save() {
+  gerarContasReceber();
+  await salvarNoSupabase();
   render();
 }
 
@@ -1768,7 +1726,7 @@ function removerPredio(predioId) {
   db.predios = db.predios.filter(x => x.id !== predioId);
 
   // salva no localStorage
-  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+  await salvarNoSupabase();
 
   // redesenha a tela
   render();
@@ -1840,9 +1798,22 @@ async function carregarPrediosDoSupabase() {
   }));
 
   // salva no localStorage para o resto do sistema funcionar
-  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+  await salvarNoSupabase();
 
   render();
+}
+
+async function salvarNoSupabase() {
+  // Aqui você salva os dados no Supabase
+  // Por enquanto, deixe como está (será implementado depois)
+  console.log('Dados salvos:', db);
+}
+
+async function carregarDoSupabase() {
+  const { data, error } = await supabase.from('predios').select('*, unidades(*, inquilinos(*))');
+  if (!error && data) {
+    db.predios = data;
+  }
 }
 
     
@@ -1911,4 +1882,5 @@ async function carregarPrediosDoSupabase() {
 
 </body>
 </html>
+
 
