@@ -99,9 +99,39 @@ label{
   }
 }
 
+      
+      @media (max-width: 768px) {
+
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100vh;
+    z-index: 200;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 16px;
+  }
+}
+
+      
     </style>
 </head>
 <body>
+
+    <!-- TOPO MOBILE -->
+<div class="md:hidden flex items-center justify-between p-4 bg-slate-900 text-white">
+  <button onclick="toggleMenu()" class="text-2xl">☰</button>
+  <span class="font-bold">Bandeira's</span>
+</div>
+
 
 <div class="sidebar">
     <!-- NOVO DESIGN DA MARCA -->
@@ -173,7 +203,7 @@ label{
 <!-- LINHA 1: LISTA + CARD GRANDE -->
 <!-- LINHA 2: CARDS RESUMO -->
 <!-- CARDS DO DASHBOARD -->
-<div class="grid grid-cols-3 gap-4 mb-10">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
 
   <div class="card">
     <p class="text-xs uppercase text-slate-400">Contas a Receber</p>
@@ -459,7 +489,11 @@ label{
   </div>
 </div>
 
-
+function toggleMenu() {
+  document.querySelector('.sidebar').classList.toggle('open');
+}
+    
+    
 <script>
 
 const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
@@ -1451,11 +1485,7 @@ status:
 
 // 1️⃣ garante que o financeiro existe
 
-// 2️⃣ gera as contas a receber
-gerarContasReceber();
 
-// 3️⃣ só depois desenha a tela
-render();
 
 // ================================
 // CONTAS A PAGAR (DESPESAS)
@@ -1833,6 +1863,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
