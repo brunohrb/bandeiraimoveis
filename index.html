@@ -121,6 +121,19 @@ label{
   }
 }
 
+      @media (max-width: 768px) {
+
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  body.menu-open .main {
+    filter: blur(2px);
+    pointer-events: none;
+  }
+
+}
+
       
     </style>
 </head>
@@ -141,11 +154,11 @@ label{
     </div>
     <nav class="space-y-2">
 <div
-  onclick="voltarParaPortfolio()"
+onclick="voltarParaPortfolio(); fecharMenuMobile()"
   class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
   <i class="fas fa-home"></i> Portfólio 2026
 </div>
-<div onclick="abrirFinanceiro()"
+<div onclick="abrirFinanceiro(); fecharMenuMobile()"
      class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
   📊 Financeiro
 </div>
@@ -488,6 +501,13 @@ label{
 
   </div>
 </div>
+
+    function fecharMenuMobile() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.remove('open');
+  document.body.classList.remove('menu-open');
+}
+
     
 <script>
 
@@ -495,8 +515,13 @@ label{
 // MENU MOBILE (SIDEBAR)
 // ================================
 function toggleMenu() {
-  document.querySelector('.sidebar').classList.toggle('open');
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('open');
+
+  // controla estado do corpo da página
+  document.body.classList.toggle('menu-open');
 }
+
 
 const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
@@ -1865,6 +1890,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
