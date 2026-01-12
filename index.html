@@ -798,14 +798,33 @@ if (pagamentoMes && pagamentoMes.pago === true) {
 <td class="text-center">${financeiroTag}</td>
 
                     <td>${contratoBtn}</td> 
-                    <td class="text-right space-x-2">
+                   <td class="text-right space-x-2 whitespace-nowrap">
 
+  <!-- EDITAR APARTAMENTO -->
+  <button
+    onclick="editarUnidade(${p.id}, '${u.id}')"
+    class="text-slate-500 hover:text-blue-600"
+    title="Editar apartamento">
+    ✏️
+  </button>
+
+  <!-- EXCLUIR APARTAMENTO -->
+  <button
+    onclick="excluirUnidade(${p.id}, '${u.id}')"
+    class="text-slate-500 hover:text-red-600"
+    title="Excluir apartamento">
+    🗑️
+  </button>
+
+  <!-- ALUGAR / EDITAR INQUILINO -->
   <button
     onclick="editInquilino(${p.id}, '${u.id}')"
-    class="text-blue-600 font-black text-xs uppercase hover:underline">
-    <i class="fas fa-edit"></i> ${u.inquilino ? 'Editar' : 'Alugar'}
+    class="text-blue-600 font-black text-xs uppercase hover:underline ml-2">
+    ALUGAR
   </button>
+
 </td>
+
 
                 </tr>
             `;
@@ -975,6 +994,7 @@ if (caucaoValor > 0 && !jaExisteCaucao) {
         return null;
     }
 
+    
 function editarPredio(predioId){
   const p = db.predios.find(x => x.id === predioId);
   const novoNome = prompt("Digite o novo nome do prédio:", p.nome);
@@ -983,6 +1003,51 @@ function editarPredio(predioId){
   save();
 }
 
+function editarUnidade(predioId, unidadeId) {
+
+  const predio = db.predios.find(p => p.id === predioId);
+  if (!predio) return;
+
+  const unidade = predio.unidades.find(u => u.id === unidadeId);
+  if (!unidade) return;
+
+  const novoNome = prompt(
+    "Editar nome do apartamento:",
+    unidade.nome
+  );
+
+  if (!novoNome || novoNome.trim() === '') return;
+
+  unidade.nome = novoNome.trim();
+
+  save();
+  viewPredio(predioId);
+}
+
+    function excluirUnidade(predioId, unidadeId) {
+
+  const predio = db.predios.find(p => p.id === predioId);
+  if (!predio) return;
+
+  const unidade = predio.unidades.find(u => u.id === unidadeId);
+  if (!unidade) return;
+
+  if (unidade.inquilino) {
+    alert("Não é possível excluir um apartamento ocupado.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `Deseja excluir o apartamento "${unidade.nome}"?`
+  );
+
+  if (!confirmar) return;
+
+  predio.unidades = predio.unidades.filter(u => u.id !== unidadeId);
+
+  save();
+  viewPredio(predioId);
+}
 
 
 function adicionarUnidade(predioId){
@@ -2161,6 +2226,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   `;
 }
 
+    
 
 </script>
 
@@ -2271,6 +2337,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     
 </body>
 </html>
+
 
 
 
