@@ -1405,9 +1405,11 @@ document.getElementById('viewFinanceiro').classList.add('hidden');
 // ================================
 // ESTADO INICIAL DA TELA (FORÇADO)
 // ================================
-window.onload = function () {
+window.onload = async function () {
   document.getElementById('viewPortfolio').style.display = 'block';
   document.getElementById('viewFinanceiro').classList.add('hidden');
+
+  await carregarPrediosDoSupabase();
 };
 
 function gerarContasReceber(){
@@ -1787,7 +1789,39 @@ testeSupabase();
     alert("Prédio enviado com sucesso para o Supabase!");
   }
 }
-enviarPrimeiroPredioParaSupabase();
+// enviarPrimeiroPredioParaSupabase();
+
+async function carregarPrediosDoSupabase() {
+
+  const { data, error } = await supabaseClient
+    .from('predios')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar prédios:", error);
+    return;
+  }
+
+  // se não tiver nada no Supabase, não faz nada
+  if (!data || !data.length) {
+    console.log("Nenhum prédio no Supabase ainda.");
+    return;
+  }
+
+  // monta o db local a partir do Supabase
+  db.predios = data.map(p => ({
+    id: p.id,
+    nome: p.nome,
+    unidades: [] // por enquanto vazio
+  }));
+
+  // salva no localStorage para o resto do sistema funcionar
+  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+
+  render();
+}
+
     
 </script>
 
@@ -1854,6 +1888,7 @@ enviarPrimeiroPredioParaSupabase();
 
 </body>
 </html>
+
 
 
 
