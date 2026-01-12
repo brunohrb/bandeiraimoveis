@@ -777,9 +777,9 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
   id: u.inquilino?.id || Math.random().toString(36).substr(2, 9),
   nome: document.getElementById('inqNome').value,
   telefone: document.getElementById('inqTelefone').value,
-  valor: document.getElementById('inqValor').value,
+valor: moedaParaNumero(document.getElementById('inqValor').value),
   venc: document.getElementById('inqVenc').value,
-  caucao: parseFloat(document.getElementById('inqCaucao').value) || 0,
+caucao: moedaParaNumero(document.getElementById('inqCaucao').value),
   contrato: currentBase64 || (u.inquilino ? u.inquilino.contrato : ""),
   pagamentos: pagamentos
 };
@@ -1342,7 +1342,7 @@ db.predios.forEach(predio => {
       const venceu = HOJE.getDate() > diaVenc;
 
       if (naoPago && venceu) {
-        inadimplencia += parseFloat(u.inquilino.valor || 0);
+inadimplencia += Number(u.inquilino.valor || 0);
       }
     }
   });
@@ -1916,6 +1916,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
