@@ -2059,6 +2059,113 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   doc.save(`Historico_${historicoAtual.unidade}.pdf`);
 }
 
+    function buscarClientesRelatorio() {
+
+  const termo = document.getElementById('buscaCliente').value.toLowerCase();
+  const lista = document.getElementById('listaClientesBusca');
+
+  if (!termo || termo.length < 2) {
+    lista.classList.add('hidden');
+    lista.innerHTML = '';
+    return;
+  }
+
+  // nomes únicos vindos do financeiro
+  const nomes = [...new Set(
+    (db.financeiro.lancamentos || [])
+      .filter(l => l.inquilinoNome)
+      .map(l => l.inquilinoNome)
+  )];
+
+  const filtrados = nomes.filter(n =>
+    n.toLowerCase().includes(termo)
+  );
+
+  lista.innerHTML = '';
+
+  if (filtrados.length === 0) {
+    lista.classList.add('hidden');
+    return;
+  }
+
+  filtrados.forEach(nome => {
+    const div = document.createElement('div');
+    div.className =
+      'p-2 cursor-pointer hover:bg-slate-100 border-b last:border-b-0';
+    div.innerText = nome;
+    div.onclick = () => selecionarClienteRelatorio(nome);
+    lista.appendChild(div);
+  });
+
+  lista.classList.remove('hidden');
+}
+
+    function selecionarClienteRelatorio(nome) {
+
+  document.getElementById('buscaCliente').value = nome;
+  document.getElementById('listaClientesBusca').classList.add('hidden');
+
+  const dados = (db.financeiro.lancamentos || [])
+    .filter(l => l.inquilinoNome === nome)
+    .sort((a, b) => new Date(a.data) - new Date(b.data));
+
+  renderRelatorioCliente(nome, dados);
+}
+
+    function renderRelatorioCliente(nome, dados) {
+
+  const tbody = document.getElementById('tabelaRelatorioCliente');
+  const titulo = document.getElementById('tituloCliente');
+  const resumo = document.getElementById('resumoCliente');
+
+  tbody.innerHTML = '';
+  document.getElementById('resultadoCliente').classList.remove('hidden');
+
+  titulo.innerText = `Histórico financeiro • ${nome}`;
+
+  let totalAluguel = 0;
+  let totalJuros = 0;
+  let totalCaucao = 0;
+
+  dados.forEach(l => {
+
+    if (l.categoria === 'aluguel') totalAluguel += l.valor;
+    if (l.categoria === 'juros') totalJuros += l.valor;
+    if (l.categoria === 'caucao') totalCaucao += l.valor;
+
+    const predioNome =
+      db.predios.find(p => p.id === l.predioId)?.nome || '—';
+
+    const tr = document.createElement('tr');
+    tr.className = 'border-b';
+
+    tr.innerHTML = `
+      <td class="p-2">${l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '-'}</td>
+      <td class="p-2">${predioNome}</td>
+      <td class="p-2">${l.unidade || '—'}</td>
+      <td class="p-2 capitalize">${l.categoria}</td>
+      <td class="p-2 text-right font-bold">
+        R$ ${l.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+      </td>
+      <td class="p-2">${l.observacao || '-'}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  const totalGeral = totalAluguel + totalJuros + totalCaucao;
+
+  resumo.innerHTML = `
+    Aluguéis: R$ ${totalAluguel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} |
+    Juros: R$ ${totalJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} |
+    Cauções: R$ ${totalCaucao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} |
+    <span class="text-emerald-700">
+      Total: R$ ${totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+    </span>
+  `;
+}
+
+
 </script>
 
 <!-- MODAL NOVA DESPESA -->
@@ -2168,6 +2275,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     
 </body>
 </html>
+
 
 
 
