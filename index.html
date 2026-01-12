@@ -205,6 +205,13 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     Aplicar filtros
   </button>
 
+    <button
+  class="btn btn-ghost text-red-600"
+  onclick="zerarFinanceiroDemo()">
+  🧹 Zerar financeiro (demo)
+</button>
+
+
 <button class="btn btn-primary" onclick="abrirModalDespesa()">
   ➕ Nova despesa
 </button>
@@ -1827,6 +1834,23 @@ function removerPredio(predioId) {
   }
 }
 
+    function zerarFinanceiroDemo() {
+  if (!confirm("Isso vai apagar TODOS os dados financeiros. Continuar?")) return;
+
+  db.financeiro = {
+    contasReceber: [],
+    contasPagar: [],
+    caixa: [],
+    lancamentos: []
+  };
+
+  save();
+  calcularFinanceiro();
+  renderDespesas();
+
+  alert("Financeiro zerado para demonstração.");
+}
+
 
 </script>
 
@@ -1893,6 +1917,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
