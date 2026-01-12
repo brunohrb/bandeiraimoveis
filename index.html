@@ -773,36 +773,12 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
 // ================================
 const caucaoValor = parseFloat(document.getElementById('inqCaucao').value) || 0;
 
-if (caucaoValor > 0) {
 
-  if (!db.financeiro.lancamentos) {
-    db.financeiro.lancamentos = [];
-  }
 
-  const jaExisteCaucao = db.financeiro.lancamentos.some(l =>
-    l.tipo === 'receita' &&
-    l.categoria === 'caucao' &&
-    l.predioId === pId &&
-    l.unidade === u.nome
-  );
+        
 
-  if (!jaExisteCaucao) {
-    db.financeiro.lancamentos.push({
-      id: Date.now(),
-      tipo: 'receita',
-      categoria: 'caucao',
-      valor: caucaoValor,
-      data: new Date().toISOString().split('T')[0],
-      mes: new Date().getMonth(),
-      ano: 2026,
-      predioId: pId,
-      unidade: u.nome,
-      inquilinoNome: document.getElementById('inqNome').value,
-      observacao: 'Caução contratual'
-    });
-  }
-}
 
+        
         u.status = 'ocupado';
         closeModal('modalInquilino');
         save();
@@ -1917,6 +1893,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
