@@ -631,12 +631,19 @@ db.predios.forEach(predio => {
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     const HOJE = new Date();
  
-    document.getElementById('inqArquivo').addEventListener('change', function(e) {
-        const file = e.target.files;
-        const reader = new FileReader();
-        reader.onloadend = () => currentBase64 = reader.result;
-        if(file) reader.readAsDataURL(file);
-    });
+   const inputArquivo = document.getElementById('inqArquivo');
+
+if (inputArquivo) {
+  inputArquivo.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => currentBase64 = reader.result;
+    reader.readAsDataURL(file);
+  });
+}
+
 
 async function save() {
   gerarContasReceber();
@@ -1934,6 +1941,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
