@@ -1596,7 +1596,6 @@ function salvarDespesa() {
     closeModal('modalDespesa');
     save();
     aplicarFiltros();
-    return;
   }
 
   // =========================
@@ -1626,44 +1625,6 @@ function salvarDespesa() {
   aplicarFiltros();
 }
 
-
-  const descricao = document.getElementById('despDescricao').value;
-  const categoria = document.getElementById('despCategoria').value;
-  const valor = parseFloat(document.getElementById('despValor').value);
-  const data = document.getElementById('despData').value;
-  const fornecedor = document.getElementById('despFornecedor').value;
-  const predioId = document.getElementById('despPredio').value || null;
-
-  if(!descricao || !valor || !data){
-    alert("Preencha descrição, valor e data.");
-    return;
-  }
-
-  if (!db.financeiro.lancamentos) {
-    db.financeiro.lancamentos = [];
-  }
-
-  const d = new Date(data);
-
-  db.financeiro.lancamentos.push({
-    id: Date.now(),
-    tipo: 'despesa',
-    categoria: categoria,
-    valor: valor,
-    data: data,
-    mes: d.getMonth(),
-    ano: d.getFullYear(),
-    predioId: predioId,
-    fornecedor: fornecedor,
-    observacao: descricao
-  });
-
-  closeModal('modalDespesa');
-  save();
-  calcularFinanceiro();
-renderDespesas();
-
-}
 
 function renderDespesas(){
 const { mes, ano, predio } = getFiltrosFinanceiro();
@@ -1972,6 +1933,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
