@@ -1405,7 +1405,7 @@ document.getElementById('finReceber').innerText =
 // ================================
 // LUCRO
 // ================================
-lucro = alugueisRecebidos + caucaoFiltrada - contasPagar;
+lucro = alugueisRecebidos + caucaoSaldo - contasPagar;
 
 document.getElementById('finLucro').innerText =
   'R$ ' + lucro.toLocaleString('pt-BR', {
@@ -1893,6 +1893,7 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
 
 
