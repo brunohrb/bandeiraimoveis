@@ -1568,7 +1568,9 @@ function salvarDespesa() {
 
   const descricao = document.getElementById('despDescricao').value;
   const categoria = document.getElementById('despCategoria').value;
-  const valor = parseFloat(document.getElementById('despValor').value);
+const valor = moedaParaNumero(
+  document.getElementById('despValor').value
+);
   const data = document.getElementById('despData').value;
   const fornecedor = document.getElementById('despFornecedor').value;
   const predioId = document.getElementById('despPredio').value || null;
@@ -1733,7 +1735,10 @@ function editarDespesa(id){
   // preenche campos
   document.getElementById('despDescricao').value = d.observacao || '';
   document.getElementById('despCategoria').value = d.categoria;
-  document.getElementById('despValor').value = d.valor;
+document.getElementById('despValor').value =
+  d.valor.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2
+  });
   document.getElementById('despData').value = d.data;
   document.getElementById('despFornecedor').value = d.fornecedor || '';
   document.getElementById('despPredio').value = d.predioId || '';
@@ -1953,6 +1958,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
