@@ -1565,6 +1565,18 @@ if (window.despesaEditandoId) {
     l => l.id === window.despesaEditandoId
   );
 
+  const descricao = document.getElementById('despDescricao').value;
+  const categoria = document.getElementById('despCategoria').value;
+  const valor = parseFloat(document.getElementById('despValor').value);
+  const data = document.getElementById('despData').value;
+  const fornecedor = document.getElementById('despFornecedor').value;
+  const predioId = document.getElementById('despPredio').value || null;
+
+  if (!descricao || !valor || !data) {
+    alert("Preencha descrição, valor e data.");
+    return;
+  }
+
   d.observacao = descricao;
   d.categoria = categoria;
   d.valor = valor;
@@ -1573,6 +1585,15 @@ if (window.despesaEditandoId) {
   d.ano = new Date(data).getFullYear();
   d.predioId = predioId;
   d.fornecedor = fornecedor;
+
+  window.despesaEditandoId = null;
+
+  closeModal('modalDespesa');
+  save();
+  aplicarFiltros();
+  return;
+}
+
 
   window.despesaEditandoId = null;
 
@@ -1680,9 +1701,20 @@ tr.innerHTML = `
 }
 
 function abrirModalDespesa() {
-  carregarPrediosDespesa(); // 🔥 carrega os prédios
+
+  window.despesaEditandoId = null;
+
+  document.getElementById('despDescricao').value = '';
+  document.getElementById('despCategoria').value = 'manutencao';
+  document.getElementById('despValor').value = '';
+  document.getElementById('despData').value = '';
+  document.getElementById('despFornecedor').value = '';
+  document.getElementById('despPredio').value = '';
+
+  carregarPrediosDespesa();
   openModal('modalDespesa');
 }
+
 
 function aplicarFiltros() {
   calcularFinanceiro();
@@ -1916,6 +1948,7 @@ function removerPredio(predioId) {
     
 </body>
 </html>
+
 
 
 
