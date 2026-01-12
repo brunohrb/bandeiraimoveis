@@ -518,6 +518,94 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </div>
 </div>
 
+    let historicoAtual = {
+  predioId: null,
+  unidade: null,
+  dados: []
+};
+
+function abrirHistoricoUnidade(predioId, unidadeNome) {
+
+  historicoAtual.predioId = predioId;
+  historicoAtual.unidade = unidadeNome;
+
+  const predio = db.predios.find(p => p.id === predioId);
+  document.getElementById('tituloHistoricoUnidade').innerText =
+    `Histórico financeiro • ${predio.nome} • ${unidadeNome}`;
+
+  // filtra SOMENTE RECEITAS da unidade (aluguel, juros, caução)
+  const dados = (db.financeiro.lancamentos || []).filter(l =>
+    l.tipo === 'receita' &&
+    l.predioId === predioId &&
+    l.unidade === unidadeNome
+  ).sort((a, b) => new Date(a.data) - new Date(b.data));
+
+  historicoAtual.dados = dados;
+
+  const tbody = document.getElementById('tbodyHistoricoUnidade');
+  tbody.innerHTML = '';
+
+  let total = 0;
+
+  dados.forEach(l => {
+    total += l.valor;
+
+    const tr = document.createElement('tr');
+    tr.className = 'border-b';
+
+    tr.innerHTML = `
+      <td class="p-2">${l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '-'}</td>
+      <td class="p-2">${l.inquilinoNome || '-'}</td>
+      <td class="p-2 capitalize">${l.categoria}</td>
+      <td class="p-2 text-right font-bold">
+        R$ ${l.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+      </td>
+      <td class="p-2">${l.observacao || '-'}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('totalHistoricoUnidade').innerText =
+    `Total recebido: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+  openModal('modalHistoricoUnidade');
+}
+
+    function exportarHistoricoUnidadePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(12);
+  doc.text(
+    document.getElementById('tituloHistoricoUnidade').innerText,
+    10,
+    10
+  );
+
+  let y = 20;
+
+  historicoAtual.dados.forEach(l => {
+    const linha =
+      `${new Date(l.data).toLocaleDateString('pt-BR')} | ` +
+      `${l.inquilinoNome || '-'} | ` +
+      `${l.categoria.toUpperCase()} | ` +
+      `R$ ${l.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+    if (y > 280) {
+      doc.addPage();
+      y = 10;
+    }
+
+    doc.text(linha, 10, y);
+    y += 8;
+  });
+
+  doc.save(`Historico_${historicoAtual.unidade}.pdf`);
+}
+
+    
+    
 <script>
 function formatarMoedaBR(valor) {
   valor = valor.replace(/\D/g, '');
@@ -1964,9 +2052,43 @@ function removerPredio(predioId) {
     </div>
   </div>
 </div>
+
+    <div id="modalHistoricoUnidade" class="modal">
+  <div class="card w-[95%] max-w-4xl max-h-[85vh] overflow-y-auto">
+
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="tituloHistoricoUnidade" class="font-black text-xl"></h3>
+      <button class="btn btn-ghost" onclick="closeModal('modalHistoricoUnidade')">✕</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-100 uppercase text-xs text-slate-500">
+          <tr>
+            <th class="p-2 text-left">Data</th>
+            <th class="p-2 text-left">Inquilino</th>
+            <th class="p-2 text-left">Tipo</th>
+            <th class="p-2 text-right">Valor</th>
+            <th class="p-2 text-left">Obs.</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyHistoricoUnidade"></tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-between items-center mt-4">
+      <p id="totalHistoricoUnidade" class="font-black text-lg"></p>
+      <button class="btn btn-primary" onclick="exportarHistoricoUnidadePDF()">📄 Exportar PDF</button>
+    </div>
+
+  </div>
+</div>
+
+
     
 </body>
 </html>
+
 
 
 
