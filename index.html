@@ -508,8 +508,7 @@ async function save() {
         }
     }
 
-  async function addPredio() {
-
+async function addPredio() {
   const nome = document.getElementById('pNome').value;
   const unidadesTxt = document.getElementById('pUnidades').value;
 
@@ -518,30 +517,46 @@ async function save() {
     return;
   }
 
-  const id = Date.now();
-
-  const { error } = await supabaseClient
+  // 1. Cria o prédio
+  const { data: predioData, error: predioError } = await supabaseClient
     .from('predios')
-    .insert({
-      id: id,
-      nome: nome
-    });
+    .insert({ nome: nome })
+    .select()
+    .single();
 
-  if (error) {
-    console.error("Erro ao salvar prédio:", error);
-    alert("Erro ao salvar no Supabase (veja o console)");
+  if (predioError) {
+    console.error("Erro ao salvar prédio:", predioError);
+    alert("Erro ao salvar no Supabase");
     return;
   }
 
-  // limpa formulário
+  // 2. Cria as unidades
+  const unidades = unidadesTxt.split(',').map(u => ({
+    nome: u.trim(),
+    predio_id: predioData.id,
+    status: 'vago'
+  }));
+
+  const { error: unidadesError } = await supabaseClient
+    .from('unidades')
+    .insert(unidades);
+
+  if (unidadesError) {
+    console.error("Erro ao criar unidades:", unidadesError);
+    alert("Erro ao criar unidades");
+    return;
+  }
+
+  // Limpa formulário
   document.getElementById('pNome').value = '';
   document.getElementById('pUnidades').value = '';
 
   closeModal('modalPredio');
 
-  // recarrega tudo do Supabase
+  // Recarrega tudo
   await carregarPrediosDoSupabase();
 }
+
 
     function viewPredio(predioId) {
         currentViewingPredioId = predioId; 
@@ -1882,5 +1897,6 @@ async function carregarDoSupabase() {
 
 </body>
 </html>
+
 
 
