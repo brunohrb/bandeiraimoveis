@@ -528,8 +528,6 @@ db.predios.forEach(predio => {
 });
 
 // salva migração automaticamente
-localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
-
     let currentBase64 = "";
     let currentViewingPredioId = null; 
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -1417,11 +1415,6 @@ document.getElementById('viewFinanceiro').classList.add('hidden');
 // ================================
 // ESTADO INICIAL DA TELA (FORÇADO)
 // ================================
-window.onload = function () {
-  document.getElementById('viewPortfolio').style.display = 'block';
-  document.getElementById('viewFinanceiro').classList.add('hidden');
-};
-
 function gerarContasReceber(){
   db.financeiro.contasReceber = [];
 
@@ -1842,4 +1835,5 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
 
