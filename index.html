@@ -5,6 +5,8 @@
     <title>Bandeira's Imobiliaria Gestão Financeira • 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="cdnjs.cloudflare.com">
   
@@ -461,7 +463,31 @@ label{
 
 <script>
 
-    let db = JSON.parse(localStorage.getItem('bandeira_db_v4')) || { predios: [] };
+const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let db = { predios: [] };
+
+async function carregarSistema() {
+  const { data, error } = await supabaseClient
+    .from('backup_sistema')
+    .select('dados')
+    .eq('id', 'principal')
+    .single();
+
+  if (data && data.dados) {
+    db = data.dados;
+  }
+
+  render();
+}
+
+window.onload = carregarSistema;
 if(!db.financeiro){
   db.financeiro = {
     contasReceber: [],
@@ -516,12 +542,11 @@ localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
         if(file) reader.readAsDataURL(file);
     });
 
-  function save() {
-  gerarContasReceber(); // 🔥 ATUALIZA CONTAS A RECEBER
-  localStorage.setItem('bandeira_db_v4', JSON.stringify(db));
+async function save() {
+  gerarContasReceber();
+  await salvarTudoNoSupabase();
   render();
 }
-
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { 
@@ -1736,6 +1761,21 @@ function removerPredio(predioId) {
   render();
 }
 
+    async function salvarTudoNoSupabase() {
+  const { error } = await supabaseClient
+    .from('backup_sistema')
+    .upsert({
+      id: 'principal',
+      dados: db,
+      updated_at: new Date().toISOString()
+    });
+
+  if (error) {
+    console.error('Erro ao salvar no Supabase:', error);
+    alert('Erro ao salvar no banco');
+  }
+}
+
 
 </script>
 
@@ -1802,3 +1842,4 @@ function removerPredio(predioId) {
 
 </body>
 </html>
+
