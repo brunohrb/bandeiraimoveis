@@ -1775,7 +1775,7 @@ testeSupabase();
 
   const { error } = await supabaseClient
     .from('predios')
-    .insert({
+    .upsert({
       id: p.id,
       nome: p.nome
     });
@@ -1854,6 +1854,7 @@ enviarPrimeiroPredioParaSupabase();
 
 </body>
 </html>
+
 
 
 
