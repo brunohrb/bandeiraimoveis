@@ -532,10 +532,7 @@ function moedaParaNumero(valor) {
   return parseFloat(
     valor.replace(/\./g, '').replace(',', '.')
   ) || 0;
-}
-</script>
-  
-
+}  
 
         function fecharMenuMobile() {
   const sidebar = document.querySelector('.sidebar');
@@ -794,11 +791,18 @@ const caucaoValor = moedaParaNumero(
   document.getElementById('inqCaucao').value
 );
 
-if (caucaoValor > 0) {
+const caucaoValor = moedaParaNumero(
+  document.getElementById('inqCaucao').value
+);
 
-  if (!db.financeiro.lancamentos) {
-    db.financeiro.lancamentos = [];
-  }
+const jaExisteCaucao = db.financeiro.lancamentos?.some(
+  l =>
+    l.categoria === 'caucao' &&
+    l.inquilinoNome === document.getElementById('inqNome').value &&
+    l.unidade === u.nome
+);
+
+if (caucaoValor > 0 && !jaExisteCaucao) {
 
   db.financeiro.lancamentos.push({
     id: Date.now(),
@@ -813,7 +817,9 @@ if (caucaoValor > 0) {
     inquilinoNome: document.getElementById('inqNome').value,
     observacao: 'Caução recebida'
   });
+
 }
+
 
         
         u.status = 'ocupado';
@@ -1410,8 +1416,9 @@ db.financeiro.contasReceber.forEach(c => {
   document.getElementById('finJuros').innerText =
     'R$ ' + jurosRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
-  document.getElementById('finCaucao').innerText =
-    'R$ ' + caucaoSaldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+document.getElementById('finCaucao').innerText =
+  'R$ ' + caucaoFiltrada.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
 
 document.getElementById('finPagar').innerText =
   'R$ ' + contasPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
@@ -1912,9 +1919,11 @@ function removerPredio(predioId) {
     </div>
   </div>
 </div>
-
+    
+</script>
 </body>
 </html>
+
 
 
 
