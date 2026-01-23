@@ -858,7 +858,7 @@ const todosArquivos = arquivosNovos.length
 
 const contratoBtn = todosArquivos.length
   ? todosArquivos.map((a, index) => `
-      <div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
         <a href="#"
    onclick="abrirArquivoBase64('${a.base64}', '${a.tipo || 'application/pdf'}')"
    class="text-blue-600 hover:underline text-xs font-semibold truncate">
@@ -2681,6 +2681,7 @@ function migrarContratosAntigos() {
     
 </body>
 </html>
+
 
 
 
