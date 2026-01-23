@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
     <meta charset="UTF-8">
     <title>Bandeira's Imobiliaria Gestão Financeira • 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   
   <style>
 .card-full {
@@ -212,16 +212,28 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     Aplicar filtros
   </button>
 
-    <button
-  class="btn btn-ghost text-red-600"
-  onclick="zerarFinanceiroDemo()">
-  🧹 Zerar financeiro (demo)
-</button>
-
 
 <button class="btn btn-primary" onclick="abrirModalDespesa()">
   ➕ Nova despesa
 </button>
+
+
+<!-- BACKUP / RESTAURAÇÃO -->
+<div class="flex gap-2 flex-wrap">
+  <button class="btn btn-ghost" onclick="exportarExcel()">
+    📊 Exportar Excel (Backup)
+  </button>
+
+  <label class="btn btn-ghost cursor-pointer">
+    ♻️ Restaurar via Excel
+    <input
+      type="file"
+      accept=".xlsx"
+      class="hidden"
+      onchange="importarExcel(this)">
+  </label>
+</div>
+
 
 
 </div>
@@ -378,7 +390,10 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 <div id="modalPredio" class="modal">
 <div class="card w-[95%] max-w-[450px]">
         <h3 class="font-black text-xl mb-6">CADASTRAR PRÉDIO</h3>
-        <label class="text-xs font-bold text-slate-400 uppercase">Nome do Condomínio</label>
+      
+
+
+  <label class="text-xs font-bold text-slate-400 uppercase">Nome do Condomínio</label>
         <input id="pNome" class="input mb-4" placeholder="Ex: Edifício Mar Azul">
         <label class="text-xs font-bold text-slate-400 uppercase">Unidades (Separe por vírgula)</label>
         <textarea id="pUnidades" class="input h-24 mb-6" placeholder="Apto 101, Apto 102, Cobertura..."></textarea>
@@ -405,7 +420,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
                     <th class="pb-3">Venc.</th>
                     <th class="pb-3">Status</th>
 <th class="pb-3">Financeiro</th>
-                    <th class="pb-3">Contrato</th>
+<th class="pb-3">Contrato e Documentos</th>
                     <th class="pb-3 text-right">Ações</th>
                 </tr>
             </thead>
@@ -471,9 +486,22 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </div>
 </div>
 
-                <label class="text-xs font-bold text-slate-400 uppercase">Anexo do Contrato (.pdf/imagem)</label>
-                <input id="inqArquivo" type="file" class="text-xs mt-2 block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <div id="viewContrato" class="mt-2 hidden"><a href="#" target="_blank" class="text-blue-600 font-bold text-xs underline uppercase tracking-widest"><i class="fas fa-file-pdf"></i> Visualizar Atual</a></div>
+                <label class="text-xs font-bold text-slate-400 uppercase">
+  Anexos do Inquilino (Contrato, RG, CPF, etc.)
+</label>
+
+<input
+  id="inqArquivos"
+  type="file"
+  multiple
+  class="text-xs mt-2 block w-full text-slate-500
+         file:mr-4 file:py-2 file:px-4 file:rounded-full
+         file:border-0 file:text-sm file:font-semibold
+         file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+
+<!-- Lista de arquivos selecionados -->
+<div id="listaArquivos" class="mt-2 space-y-1 text-xs"></div>
+
             </div>
             <div class="flex gap-2 pt-4">
 <button class="btn btn-ghost w-full mb-2" onclick="gerarContratoPDF()">
@@ -601,6 +629,24 @@ function moedaParaNumero(valor) {
   ) || 0;
 }  
 
+function abrirArquivoBase64(base64, tipo) {
+  const byteString = atob(base64.split(',')[1]);
+  const mimeString = tipo || 'application/octet-stream';
+
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  const blob = new Blob([ab], { type: mimeString });
+  const url = URL.createObjectURL(blob);
+
+  window.open(url, '_blank');
+}
+
+
         function fecharMenuMobile() {
   const sidebar = document.querySelector('.sidebar');
   sidebar.classList.remove('open');
@@ -693,23 +739,32 @@ db.predios.forEach(predio => {
 });
 
 // salva migração automaticamente
-    let currentBase64 = "";
+    let currentArquivos = [];
+
     let currentViewingPredioId = null; 
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     const HOJE = new Date();
  
-   const inputArquivo = document.getElementById('inqArquivo');
+   const inputArquivos = document.getElementById('inqArquivos');
 
-if (inputArquivo) {
-  inputArquivo.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+if (inputArquivos) {
+  inputArquivos.addEventListener('change', function (e) {
 
-    const reader = new FileReader();
-    reader.onloadend = () => currentBase64 = reader.result;
-    reader.readAsDataURL(file);
+    Array.from(e.target.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        currentArquivos.push({
+          nome: file.name,
+          tipo: file.type,
+          base64: reader.result
+        });
+        renderListaArquivos();
+      };
+      reader.readAsDataURL(file);
+    });
   });
 }
+
 
 
 async function save() {
@@ -719,11 +774,12 @@ async function save() {
 }
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { 
-        document.getElementById(id).style.display = 'none'; 
-        currentBase64 = ""; 
-        render(); 
-    }
+function closeModal(id) { 
+  document.getElementById(id).style.display = 'none'; 
+  currentArquivos = [];
+  render(); 
+}
+
     
     function closeModalPagamentos() {
         closeModal('modalPagamentos');
@@ -783,8 +839,42 @@ if (pagamentoMes && pagamentoMes.pago === true) {
 
             
             // Renderiza o link ou o traço '-' se não houver contrato
-            const contratoBtn = u.inquilino && u.inquilino.contrato && u.inquilino.contrato.length > 10 ? 
-                                `<a href="${u.inquilino.contrato}" target="_blank" class="text-blue-600 hover:underline font-semibold"><i class="fas fa-file-pdf"></i> Ver Contrato</a>` : '-';
+// Renderiza anexos do inquilino (Contrato, RG, CPF, etc.)
+const arquivosNovos =
+  Array.isArray(u.inquilino?.arquivos) ? u.inquilino.arquivos : [];
+
+const contratoAntigo =
+  u.inquilino?.contrato
+    ? [{
+        nome: u.inquilino.contrato.nome || 'Contrato.pdf',
+        base64: u.inquilino.contrato.base64,
+        antigo: true
+      }]
+    : [];
+
+const todosArquivos = arquivosNovos.length
+  ? arquivosNovos
+  : contratoAntigo;
+
+const contratoBtn = todosArquivos.length
+  ? todosArquivos.map((a, index) => `
+      <div class="flex items-center justify-between gap-2">
+        <a href="#"
+   onclick="abrirArquivoBase64('${a.base64}', '${a.tipo || 'application/pdf'}')"
+   class="text-blue-600 hover:underline text-xs font-semibold truncate">
+  📎 ${a.nome}
+</a>
+
+        <button
+          onclick="event.stopPropagation(); removerArquivoInquilino(${p.id}, '${u.id}', ${index})"
+          class="text-red-500 hover:text-red-700 text-xs"
+          title="Excluir arquivo">
+          🗑️
+        </button>
+      </div>
+    `).join('')
+  : '-';
+
             
             const inquilinoNome = u.inquilino ? `<span class="cursor-pointer text-blue-700 hover:underline font-medium" onclick="viewPagamentos('${u.inquilino.id}')">${u.inquilino.nome}</span>` : '<span class="text-slate-300 italic">Disponível</span>';
             
@@ -837,9 +927,9 @@ if (pagamentoMes && pagamentoMes.pago === true) {
         const p = db.predios.find(x => x.id === predioId);
         const u = p.unidades.find(x => x.id === unidadeId);
         
-        document.getElementById('viewContrato').classList.add('hidden');
-        document.getElementById('viewContrato').querySelector('a').href = '#';
-        document.getElementById('inqArquivo').value = ''; // Limpa o input de arquivo visualmente
+      currentArquivos = [];
+document.getElementById('listaArquivos').innerHTML = '';
+ // Limpa o input de arquivo visualmente
 
         document.getElementById('inqPredioId').value = predioId;
         document.getElementById('inqUnidadeId').value = unidadeId;
@@ -851,10 +941,7 @@ if (pagamentoMes && pagamentoMes.pago === true) {
             document.getElementById('inqVenc').value = u.inquilino.venc;
 document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
             document.getElementById('btnVacar').style.display = 'block';
-            if(u.inquilino.contrato) {
-                document.getElementById('viewContrato').classList.remove('hidden');
-                document.getElementById('viewContrato').querySelector('a').href = u.inquilino.contrato;
-            }
+           
         } else {
             document.getElementById('inqNome').value = ''; document.getElementById('inqValor').value = '';
             document.getElementById('inqVenc').value = ''; document.getElementById('btnVacar').style.display = 'none';
@@ -877,7 +964,12 @@ document.getElementById('inqCaucao').value = u.inquilino.caucao || 0;
 valor: moedaParaNumero(document.getElementById('inqValor').value),
   venc: document.getElementById('inqVenc').value,
 caucao: moedaParaNumero(document.getElementById('inqCaucao').value),
-  contrato: currentBase64 || (u.inquilino ? u.inquilino.contrato : ""),
+  arquivos: [
+  ...(u.inquilino?.arquivos || []),
+  ...currentArquivos
+],
+
+
   pagamentos: pagamentos
 };
 
@@ -939,7 +1031,8 @@ if (caucaoValor > 0 && !jaExisteCaucao) {
     function viewPagamentos(inquilinoId) {
         currentInquilinoId = inquilinoId;
         const inq = findInquilinoById(inquilinoId);
-        document.getElementById('pagamentosTitulo').innerText = `Histórico de ${inq.nome.split(' ')}`;
+document.getElementById('pagamentosTitulo').innerText =
+  `Histórico de ${inq.nome}`;
         renderPagamentosGrid(inq);
         openModal('modalPagamentos');
     }
@@ -1076,9 +1169,14 @@ function adicionarUnidade(predioId){
                 if (u.inquilino && u.inquilino.pagamentos) {
                     const mesAtual = HOJE.getMonth();
                     const diaVenc = parseInt(u.inquilino.venc);
-                    if (!u.inquilino.pagamentos[mesAtual] && HOJE.getDate() > diaVenc) {
-                        inadimplentesCount++;
-                    }
+                 const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+const pago = pagamentoMes && pagamentoMes.pago === true;
+const venceu = HOJE.getDate() > diaVenc;
+
+if (!pago && venceu) {
+  inadimplentesCount++;
+}
+
                 }
             });
             const ocupados = p.unidades.length - livres;
@@ -1280,8 +1378,6 @@ CPF:
 }
 
 
-
-
 function gerarContratoPDF() {
     const { jsPDF } = window.jspdf;
 
@@ -1320,7 +1416,20 @@ function gerarContratoPDF() {
         y += 6;
     }
 
-    doc.save(`Contrato_${inqNome.value || 'Locacao'}.pdf`);
+// gera base64 do contrato
+const contratoBase64 = doc.output('datauristring');
+
+// adiciona contrato aos arquivos do inquilino
+currentArquivos.push({
+  nome: `Contrato_${inqNome.value || 'Locacao'}.pdf`,
+  tipo: 'application/pdf',
+  base64: contratoBase64,
+  categoria: 'contrato'
+});
+
+// baixa o PDF normalmente
+doc.save(`Contrato_${inqNome.value || 'Locacao'}.pdf`);
+
 }
 
 function atualizarTotalBaixa() {
@@ -1483,14 +1592,14 @@ db.predios.forEach(predio => {
       const mesAtual = HOJE.getMonth();
       const diaVenc = parseInt(u.inquilino.venc);
 
-      const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+const pago = pagamentoMes && pagamentoMes.pago === true;
+const venceu = HOJE.getDate() > diaVenc;
 
-      const naoPago = !pagamentoMes || pagamentoMes.pago !== true;
-      const venceu = HOJE.getDate() > diaVenc;
+if (!pago && venceu) {
+  inadimplencia += Number(u.inquilino.valor || 0);
+}
 
-      if (naoPago && venceu) {
-inadimplencia += Number(u.inquilino.valor || 0);
-      }
     }
   });
 });
@@ -2226,7 +2335,242 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   `;
 }
 
-    
+function renderListaArquivos() {
+  const div = document.getElementById('listaArquivos');
+  if (!div) return;
+
+  div.innerHTML = currentArquivos.map(a => `
+    <div class="flex items-center gap-2">
+      📎 <span class="font-medium">${a.nome}</span>
+    </div>
+  `).join('');
+}
+
+function exportarExcel() {
+  const wb = XLSX.utils.book_new();
+
+  // ===== Predios =====
+  const predios = db.predios.map(p => ({
+    predio_id: p.id,
+    nome: p.nome
+  }));
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(predios),
+    'Predios'
+  );
+
+  // ===== Unidades =====
+  const unidades = [];
+  db.predios.forEach(p => {
+    p.unidades.forEach(u => {
+      unidades.push({
+        unidade_id: u.id,
+        predio_id: p.id,
+        nome: u.nome,
+        status: u.status
+      });
+    });
+  });
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(unidades),
+    'Unidades'
+  );
+
+  // ===== Inquilinos =====
+  const inquilinos = [];
+  const pagamentos = [];
+
+  db.predios.forEach(p => {
+    p.unidades.forEach(u => {
+      if (u.inquilino) {
+        inquilinos.push({
+          inquilino_id: u.inquilino.id,
+          unidade_id: u.id,
+          nome: u.inquilino.nome,
+          telefone: u.inquilino.telefone,
+          valor: u.inquilino.valor,
+          venc: u.inquilino.venc,
+          caucao: u.inquilino.caucao
+        });
+
+        u.inquilino.pagamentos.forEach((pg, mes) => {
+          pagamentos.push({
+            inquilino_id: u.inquilino.id,
+            mes,
+            pago: pg.pago || false,
+            aluguel: pg.aluguel || 0,
+            juros: pg.juros || 0,
+            data: pg.data || ''
+          });
+        });
+      }
+    });
+  });
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(inquilinos),
+    'Inquilinos'
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(pagamentos),
+    'Pagamentos'
+  );
+
+  // ===== Financeiro =====
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(db.financeiro.lancamentos || []),
+    'Financeiro'
+  );
+
+  XLSX.writeFile(wb, 'backup_sistema.xlsx');
+}
+   
+function importarExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, { type: 'array' });
+
+    const predios = XLSX.utils.sheet_to_json(wb.Sheets['Predios']);
+    const unidades = XLSX.utils.sheet_to_json(wb.Sheets['Unidades']);
+    const inquilinos = XLSX.utils.sheet_to_json(wb.Sheets['Inquilinos']);
+    const pagamentos = XLSX.utils.sheet_to_json(wb.Sheets['Pagamentos']);
+    const financeiro = XLSX.utils.sheet_to_json(wb.Sheets['Financeiro']);
+
+    // 🔄 reconstruir db
+    db = {
+      predios: [],
+      financeiro: { lancamentos: financeiro }
+    };
+
+    predios.forEach(p => {
+      const predio = {
+        id: p.predio_id,
+        nome: p.nome,
+        unidades: []
+      };
+
+      unidades
+        .filter(u => u.predio_id === p.predio_id)
+        .forEach(u => {
+          const inq = inquilinos.find(i => i.unidade_id === u.unidade_id);
+
+          let inquilino = null;
+
+          if (inq) {
+            inquilino = {
+              id: inq.inquilino_id,
+              nome: inq.nome,
+              telefone: inq.telefone,
+              valor: inq.valor,
+              venc: inq.venc,
+              caucao: inq.caucao,
+              arquivos: [],
+              pagamentos: Array.from({ length: 12 }, (_, mes) => {
+                const pg = pagamentos.find(
+                  p => p.inquilino_id === inq.inquilino_id && p.mes === mes
+                );
+                return pg
+                  ? { pago: pg.pago, aluguel: pg.aluguel, juros: pg.juros, data: pg.data }
+                  : { pago: false };
+              })
+            };
+          }
+
+          predio.unidades.push({
+            id: u.unidade_id,
+            nome: u.nome,
+            status: u.status,
+            inquilino
+          });
+        });
+
+      db.predios.push(predio);
+    });
+
+    save();
+    alert('Sistema restaurado com sucesso!');
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function removerArquivoInquilino(predioId, unidadeId, index) {
+  if (!confirm('Deseja remover este arquivo?')) return;
+
+  const predio = db.predios.find(p => p.id === predioId);
+  if (!predio) return;
+
+  const unidade = predio.unidades.find(u => u.id === unidadeId);
+  if (!unidade || !unidade.inquilino) return;
+
+  // remove do array novo
+  if (Array.isArray(unidade.inquilino.arquivos)) {
+    unidade.inquilino.arquivos.splice(index, 1);
+  }
+
+  // se for contrato antigo, remove também
+  if (unidade.inquilino.contrato) {
+    delete unidade.inquilino.contrato;
+  }
+
+  save();
+  viewPredio(predioId);
+}
+
+function migrarContratosAntigos() {
+  let alterou = false;
+
+  db.predios.forEach(predio => {
+    predio.unidades.forEach(unidade => {
+      const inq = unidade.inquilino;
+      if (!inq) return;
+
+      // se tem contrato antigo
+      if (inq.contrato && inq.contrato.base64) {
+        if (!Array.isArray(inq.arquivos)) {
+          inq.arquivos = [];
+        }
+
+        // evita duplicar
+        const jaExiste = inq.arquivos.some(a =>
+          a.nome === inq.contrato.nome
+        );
+
+        if (!jaExiste) {
+          inq.arquivos.push({
+            nome: inq.contrato.nome || 'Contrato.pdf',
+            tipo: 'application/pdf',
+            base64: inq.contrato.base64.startsWith('data:')
+              ? inq.contrato.base64
+              : 'data:application/pdf;base64,' + inq.contrato.base64,
+            categoria: 'contrato'
+          });
+          alterou = true;
+        }
+
+        // remove contrato antigo
+        delete inq.contrato;
+      }
+    });
+  });
+
+  if (alterou) {
+    save();
+    console.log('Contratos antigos migrados com sucesso');
+  }
+}
+
 
 </script>
 
@@ -2337,34 +2681,3 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
