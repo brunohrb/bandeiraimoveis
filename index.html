@@ -139,6 +139,39 @@ label{
 </head>
 <body>
 
+
+<!-- 🔐 LOGIN OVERLAY -->
+<div id="loginOverlay"
+     class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90">
+
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-sm">
+    <h2 class="text-2xl font-black text-center text-slate-900 mb-2">
+      Bandeira's
+    </h2>
+    <p class="text-center text-slate-500 text-sm mb-6">
+      Acesso restrito • Gestão Financeira
+    </p>
+
+    <input
+      id="loginSenha"
+      type="password"
+      placeholder="Digite a senha"
+      class="input mb-4"
+      onkeydown="if(event.key==='Enter') fazerLogin()"
+    >
+
+    <button
+      onclick="fazerLogin()"
+      class="btn btn-primary w-full">
+      Entrar
+    </button>
+
+    <p id="loginErro" class="text-red-600 text-sm text-center mt-4 hidden">
+      Senha incorreta
+    </p>
+  </div>
+</div>
+
     <!-- TOPO MOBILE -->
 <div class="md:hidden flex items-center justify-between p-4 bg-slate-900 text-white">
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
@@ -420,7 +453,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
                     <th class="pb-3">Venc.</th>
                     <th class="pb-3">Status</th>
 <th class="pb-3">Financeiro</th>
-<th class="pb-3">Contrato</th>
+<th class="pb-3">Contrato e Documentos</th>
                     <th class="pb-3 text-right">Ações</th>
                 </tr>
             </thead>
@@ -612,8 +645,63 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
       
-    
+   
 <script>
+
+const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
+
+    const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+/* ============================
+   🔐 LOGIN ONLINE (SENHA ÚNICA)
+============================ */
+
+function estaLogado() {
+  return localStorage.getItem("auth_bandeiras") === "ok";
+}
+
+async function fazerLogin() {
+  const senhaDigitada = document.getElementById("loginSenha").value;
+  const erro = document.getElementById("loginErro");
+  erro.classList.add("hidden");
+
+  const { data, error } = await supabaseClient
+    .from("config_sistema")
+    .select("valor")
+    .eq("id", "senha_global")
+    .single();
+
+if (error) {
+  console.error(error);
+  alert("Erro Supabase: " + error.message);
+  return;
+}
+
+if (!data) {
+  alert("Senha não encontrada no banco.");
+  return;
+}
+
+
+  if (senhaDigitada === data.valor) {
+    localStorage.setItem("auth_bandeiras", "ok");
+    document.getElementById("loginOverlay").style.display = "none";
+    carregarSistema(); // ⬅️ agora sim carrega
+  } else {
+    erro.classList.remove("hidden");
+  }
+}
+
+function logoutSistema() {
+  localStorage.removeItem("auth_bandeiras");
+  location.reload();
+}
+
+
 function formatarMoedaBR(valor) {
   valor = valor.replace(/\D/g, '');
   valor = (parseInt(valor) / 100).toFixed(2);
@@ -667,14 +755,6 @@ function toggleMenu() {
 }
 
 
-const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_uz9C7uRoMV8nvFAx-L7Dfg_mdOQ2L4X';
-
-    const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
 let db = { predios: [] };
 
 async function carregarSistema() {
@@ -705,7 +785,18 @@ async function carregarSistema() {
 }
 
 
-window.onload = carregarSistema;
+window.onload = function () {
+
+  // 🔐 bloqueia acesso até validar senha
+  if (!estaLogado()) {
+    document.getElementById("loginOverlay").style.display = "flex";
+    return; // ⛔ NÃO carrega o sistema
+  }
+
+  document.getElementById("loginOverlay").style.display = "none";
+  carregarSistema();
+};
+
 
 // ================================
 // MIGRAÇÃO SEGURA DO BANCO
@@ -858,7 +949,8 @@ const todosArquivos = arquivosNovos.length
 
 const contratoBtn = todosArquivos.length
   ? todosArquivos.map((a, index) => `
-<div class="flex items-center gap-2">
+      <div class="flex items-center gap-2">
+
         <a href="#"
    onclick="abrirArquivoBase64('${a.base64}', '${a.tipo || 'application/pdf'}')"
    class="text-blue-600 hover:underline text-xs font-semibold truncate">
@@ -2571,6 +2663,44 @@ function migrarContratosAntigos() {
   }
 }
 
+function solicitarPermissaoNotificacao() {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function notificarInadimplentes() {
+
+  if (Notification.permission !== "granted") return;
+
+  let inadimplentes = [];
+
+  db.predios.forEach(p => {
+    p.unidades.forEach(u => {
+      if (u.status === 'ocupado' && u.inquilino) {
+
+        const mesAtual = HOJE.getMonth();
+        const diaVenc = parseInt(u.inquilino.venc);
+        const pagamento = u.inquilino.pagamentos[mesAtual];
+
+        if (!pagamento?.pago && HOJE.getDate() > diaVenc) {
+          inadimplentes.push(
+            `${u.inquilino.nome} (${p.nome} - ${u.nome})`
+          );
+        }
+      }
+    });
+  });
+
+  if (inadimplentes.length) {
+    new Notification("⚠️ Inadimplência detectada", {
+      body: inadimplentes.join('\n'),
+      icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png"
+    });
+  }
+}
 
 </script>
 
@@ -2681,7 +2811,3 @@ function migrarContratosAntigos() {
     
 </body>
 </html>
-
-
-
-
