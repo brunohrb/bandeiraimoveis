@@ -303,7 +303,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </div>
 
   <div class="card">
-    <p class="text-xs uppercase text-slate-400">Contas a Pagar</p>
+    <p class="text-xs uppercase text-slate-400">Contas Pagas</p>
     <p id="finPagar" class="text-2xl font-black text-slate-700">R$ 0,00</p>
   </div>
 
@@ -323,7 +323,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 <div class="card card-full mt-10">
 
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-lg font-black">Contas a pagar</h2>
+    <h2 class="text-lg font-black">Contas pagas</h2>
     <span class="text-xs text-slate-400 uppercase">Detalhamento</span>
   </div>
 
@@ -1778,7 +1778,7 @@ document.getElementById('finReceber').innerText =
 // ================================
 // LUCRO
 // ================================
-lucro = alugueisRecebidos + jurosRecebidos + caucaoFiltrada - contasPagar;
+lucro = alugueisRecebidos + jurosRecebidos - contasPagar;
 
 document.getElementById('finLucro').innerText =
   'R$ ' + lucro.toLocaleString('pt-BR', {
@@ -1821,6 +1821,10 @@ function abrirFinanceiro(){
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewFinanceiro').classList.remove('hidden');
+
+  // 🔹 mês atual automático
+  const mesAtual = new Date().getMonth();
+  document.getElementById('filtroMes').value = mesAtual.toString();
 
   gerarContasReceber();
   carregarFiltroPredios();
@@ -1875,7 +1879,7 @@ status:
 
 
 // ================================
-// CONTAS A PAGAR (DESPESAS)
+// CONTAS PAGAS (DESPESAS)
 // ================================
 function adicionarDespesa({
   descricao,
