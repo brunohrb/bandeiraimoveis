@@ -2506,13 +2506,26 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     R$ ${l.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
   </td>
   <td class="p-2">${l.observacao || '-'}</td>
-  <td class="p-2 text-center">
-    <button
-      class="text-red-600 hover:underline text-sm"
-      onclick="excluirLancamentoRelatorio(${l._index}, '${nome}')">
-      🗑️
-    </button>
-  </td>
+<td class="p-2 text-center whitespace-nowrap">
+
+  <!-- EDITAR -->
+  <button
+    class="text-blue-600 hover:underline text-sm mr-2"
+    onclick="editarLancamentoRelatorio(${l._index})"
+    title="Editar lançamento">
+    ✏️
+  </button>
+
+  <!-- EXCLUIR -->
+  <button
+    class="text-red-600 hover:underline text-sm"
+    onclick="excluirLancamentoRelatorio(${l._index}, '${nome}')"
+    title="Excluir lançamento">
+    🗑️
+  </button>
+
+</td>
+
 `;
 
 
@@ -2938,6 +2951,80 @@ function excluirLancamentoRelatorio(index, nomeCliente) {
   selecionarClienteRelatorio(nomeCliente);
 
   alert('Lançamento removido com sucesso.');
+}
+
+function editarLancamentoRelatorio(index) {
+
+  const l = db.financeiro.lancamentos[index];
+  if (!l) return;
+
+  // 🔹 valor
+  const novoValor = prompt(
+    `Editar valor (${l.categoria})`,
+    l.valor
+  );
+  if (novoValor === null) return;
+
+  const valorNumero = Number(
+    novoValor.toString().replace(',', '.')
+  );
+  if (isNaN(valorNumero)) {
+    alert('Valor inválido');
+    return;
+  }
+
+  // 🔹 data (BR)
+  const dataAtualBR = l.data
+    ? new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')
+    : '';
+
+  const novaDataBR = prompt(
+    'Editar data (formato DD/MM/AAAA)',
+    dataAtualBR
+  );
+  if (!novaDataBR) return;
+
+  const dataISO = dataBRparaISO(novaDataBR);
+  if (!dataISO) {
+    alert('Data inválida. Use DD/MM/AAAA');
+    return;
+  }
+
+  const dataObj = new Date(dataISO + 'T12:00:00');
+  if (isNaN(dataObj.getTime())) {
+    alert('Data inválida');
+    return;
+  }
+
+  // ✅ aplica mudanças REAIS
+  l.valor = valorNumero;
+  l.data = dataISO;
+  l.mes = dataObj.getMonth();      // mês correto
+  l.ano = dataObj.getFullYear();   // ano correto
+
+  save();
+  calcularFinanceiro();
+
+  if (l.inquilinoNome) {
+    selecionarClienteRelatorio(l.inquilinoNome);
+  }
+
+  alert('Lançamento atualizado com sucesso.');
+}
+
+function dataBRparaISO(dataBR) {
+  const partes = dataBR.split('/');
+  if (partes.length !== 3) return null;
+
+  const [dia, mes, ano] = partes;
+
+  if (
+    dia.length !== 2 ||
+    mes.length !== 2 ||
+    ano.length !== 4
+  ) return null;
+
+  return `${ano}-${mes}-${dia}`;
 }
 
 
