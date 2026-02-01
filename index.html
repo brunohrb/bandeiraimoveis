@@ -853,6 +853,31 @@ db.predios.forEach(predio => {
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     const HOJE = new Date();
  
+function estaInadimplente(inquilino) {
+  if (!inquilino || !inquilino.pagamentos) return false;
+
+  const mesAtual = HOJE.getMonth();
+  const diaHoje = HOJE.getDate();
+  const diaVenc = parseInt(inquilino.venc);
+
+  // 🔴 qualquer mês ANTERIOR não pago
+  for (let mes = 0; mes < mesAtual; mes++) {
+    const pag = inquilino.pagamentos[mes];
+    if (!pag || pag.pago !== true) {
+      return true;
+    }
+  }
+
+  // 🟡 mês atual: só depois do vencimento
+  const pagAtual = inquilino.pagamentos[mesAtual];
+  if ((!pagAtual || pagAtual.pago !== true) && diaHoje > diaVenc) {
+    return true;
+  }
+
+  return false;
+}
+
+
    const inputArquivos = document.getElementById('inqArquivos');
 
 if (inputArquivos) {
@@ -919,9 +944,8 @@ function closeModal(id) {
             if (u.inquilino && u.inquilino.pagamentos) {
                 const mesAtual = HOJE.getMonth();
                 const diaVenc = parseInt(u.inquilino.venc);
-                if (!u.inquilino.pagamentos[mesAtual] && HOJE.getDate() > diaVenc) {
-                    isLate = true;
-                }
+isLate = estaInadimplente(u.inquilino);
+
             }
 
 const statusTag =
@@ -937,11 +961,13 @@ if (u.status === 'ocupado' && u.inquilino && u.inquilino.pagamentos) {
 
   const pagamentoMes = u.inquilino.pagamentos[mesAtual];
 
-if (pagamentoMes && pagamentoMes.pago === true) {
-  financeiroTag = '<span class="tag tag-free">Pago</span>';
-} else if (HOJE.getDate() > diaVenc) {
+if (estaInadimplente(u.inquilino)) {
   financeiroTag = '<span class="tag tag-late">Inadimplente</span>';
+} else {
+  financeiroTag = '<span class="tag tag-free">Em dia</span>';
 }
+
+
 
 }
 
@@ -1309,13 +1335,15 @@ function adicionarUnidade(predioId){
                 if (u.inquilino && u.inquilino.pagamentos) {
                     const mesAtual = HOJE.getMonth();
                     const diaVenc = parseInt(u.inquilino.venc);
-                 const pagamentoMes = u.inquilino.pagamentos[mesAtual];
+                const pagamentoMes = u.inquilino.pagamentos[mesAtual];
 const pago = pagamentoMes && pagamentoMes.pago === true;
 const venceu = HOJE.getDate() > diaVenc;
 
-if (!pago && venceu) {
+if (estaInadimplente(u.inquilino)) {
   inadimplentesCount++;
 }
+
+
 
                 }
             });
@@ -1740,9 +1768,10 @@ const pagamentoMes = u.inquilino.pagamentos[mesAtual];
 const pago = pagamentoMes && pagamentoMes.pago === true;
 const venceu = HOJE.getDate() > diaVenc;
 
-if (!pago && venceu) {
+if (estaInadimplente(u.inquilino)) {
   inadimplencia += Number(u.inquilino.valor || 0);
 }
+
 
     }
   });
@@ -2760,7 +2789,8 @@ function notificarInadimplentes() {
         const diaVenc = parseInt(u.inquilino.venc);
         const pagamento = u.inquilino.pagamentos[mesAtual];
 
-        if (!pagamento?.pago && HOJE.getDate() > diaVenc) {
+        if (estaInadimplente(u.inquilino)) {
+
           inadimplentes.push(
             `${u.inquilino.nome} (${p.nome} - ${u.nome})`
           );
@@ -3020,4 +3050,5 @@ function excluirLancamentoRelatorio(index, nomeCliente) {
     
 </body>
 </html>
+
 
