@@ -240,9 +240,6 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     <option value="all">Todos os prédios</option>
   </select>
 
-  <button class="btn btn-primary" onclick="aplicarFiltros()">
-    Aplicar filtros
-  </button>
 
 
 <button class="btn btn-primary" onclick="abrirModalDespesa()">
@@ -663,6 +660,8 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
    
 <script>
 
+
+
 const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtd21yamF3c2l0YmJsa3hhb3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwOTMyMDUsImV4cCI6MjA4MzY2OTIwNX0.QQ4Cwq46o3v8KqLoYTEHDmYyND79PU7V9A4bQbAWZhY';
 
@@ -769,8 +768,16 @@ function toggleMenu() {
   document.body.classList.toggle('menu-open');
 }
 
-
-let db = { predios: [] };
+let db = {
+  predios: [],
+  financeiro: {
+    contasReceber: [],
+    contasPagar: [],
+    caixa: [],
+    lancamentos: []
+  },
+  despesas: []
+};
 
 async function carregarSistema() {
   const { data, error } = await supabaseClient
@@ -905,7 +912,6 @@ if (inputArquivos) {
 
 
 async function save() {
-  gerarContasReceber();
   await salvarTudoNoSupabase();
   render();
 }
@@ -1061,113 +1067,111 @@ const contratoBtn = todosArquivos.length
         openModal('modalDetalhe');
     }
 
-    function editInquilino(predioId, unidadeId) {
-        closeModal('modalDetalhe'); 
-        const p = db.predios.find(x => x.id === predioId);
-        const u = p.unidades.find(x => x.id === unidadeId);
-        
-      currentArquivos = [];
-document.getElementById('listaArquivos').innerHTML = '';
- // Limpa o input de arquivo visualmente
+function editInquilino(predioId, unidadeId) {
+  closeModal('modalDetalhe');
+  const p = db.predios.find(x => x.id === predioId);
+  const u = p.unidades.find(x => x.id === unidadeId);
 
-        document.getElementById('inqPredioId').value = predioId;
-        document.getElementById('inqUnidadeId').value = unidadeId;
-        document.getElementById('inqTitulo').innerText = u.nome;
+  currentArquivos = [];
+  document.getElementById('listaArquivos').innerHTML = '';
 
-        if (u.inquilino) {
-  document.getElementById('inqNome').value = u.inquilino.nome;
-  document.getElementById('inqValor').value = u.inquilino.valor;
-  document.getElementById('inqVenc').value = u.inquilino.venc;
-  
-document.getElementById('inqCaucao').value = '';
-document.getElementById('inqCaucaoData').value =
-  new Date().toISOString().split('T')[0];
+  document.getElementById('inqPredioId').value = predioId;
+  document.getElementById('inqUnidadeId').value = unidadeId;
+  document.getElementById('inqTitulo').innerText = u.nome;
 
+  if (u.inquilino) {
+    document.getElementById('inqNome').value = u.inquilino.nome || '';
+    document.getElementById('inqNacionalidade').value = u.inquilino.nacionalidade || '';
+    document.getElementById('inqProfissao').value = u.inquilino.profissao || '';
+    document.getElementById('inqRG').value = u.inquilino.rg || '';
+    document.getElementById('inqCPF').value = u.inquilino.cpf || '';
+    document.getElementById('inqTelefone').value = u.inquilino.telefone || '';
+    document.getElementById('inqEndereco').value = u.inquilino.endereco || '';
+    document.getElementById('inqValor').value = u.inquilino.valor || '';
+    document.getElementById('inqVenc').value = u.inquilino.venc || '';
+    document.getElementById('inqCaucao').value = '';
+    document.getElementById('inqCaucaoData').value = new Date().toISOString().split('T')[0];
+    document.getElementById('btnVacar').style.display = 'block';
+  } else {
+    document.getElementById('inqNome').value = '';
+    document.getElementById('inqNacionalidade').value = '';
+    document.getElementById('inqProfissao').value = '';
+    document.getElementById('inqRG').value = '';
+    document.getElementById('inqCPF').value = '';
+    document.getElementById('inqTelefone').value = '';
+    document.getElementById('inqEndereco').value = '';
+    document.getElementById('inqValor').value = '';
+    document.getElementById('inqVenc').value = '';
+    document.getElementById('inqCaucao').value = '';
+    document.getElementById('inqCaucaoData').value = new Date().toISOString().split('T')[0];
+    document.getElementById('btnVacar').style.display = 'none';
+  }
 
-  document.getElementById('btnVacar').style.display = 'block';
+  openModal('modalInquilino');
 }
- else {
-            document.getElementById('inqNome').value = ''; document.getElementById('inqValor').value = '';
-            document.getElementById('inqVenc').value = ''; document.getElementById('btnVacar').style.display = 'none';
-        }
-        openModal('modalInquilino');
+
+  function saveInquilino() {
+  const pId = parseInt(document.getElementById('inqPredioId').value);
+  const uId = document.getElementById('inqUnidadeId').value;
+  const p = db.predios.find(x => x.id === pId);
+  const u = p.unidades.find(x => x.id === uId);
+
+  const pagamentos = u.inquilino?.pagamentos ||
+    Array.from({ length: 12 }, () => ({ pago: false }));
+
+  // ✅ FIX 2: preserva arquivos existentes e adiciona novos
+  const arquivosExistentes = u.inquilino?.arquivos || [];
+  const todosArquivos = [...arquivosExistentes, ...currentArquivos];
+
+  u.inquilino = {
+    id: u.inquilino?.id || Math.random().toString(36).substr(2, 9),
+    nome: document.getElementById('inqNome').value,
+    nacionalidade: document.getElementById('inqNacionalidade').value,
+    profissao: document.getElementById('inqProfissao').value,
+    rg: document.getElementById('inqRG').value,
+    cpf: document.getElementById('inqCPF').value,
+    telefone: document.getElementById('inqTelefone').value,
+    endereco: document.getElementById('inqEndereco').value,
+    valor: moedaParaNumero(document.getElementById('inqValor').value),
+    venc: document.getElementById('inqVenc').value,
+    ativo: true,
+    dataEntrada: u.inquilino?.dataEntrada || new Date().toISOString().split('T')[0],
+    dataSaida: null,
+    arquivos: todosArquivos, // ✅ salva arquivos
+    pagamentos: pagamentos
+  };
+
+  // registro de caução
+  const caucaoValor = moedaParaNumero(document.getElementById('inqCaucao').value);
+  const caucaoDataStr = document.getElementById('inqCaucaoData').value;
+
+  if (caucaoValor > 0 && caucaoDataStr) {
+    const jaExisteCaucao = db.financeiro.lancamentos?.some(
+      l => l.categoria === 'caucao' && l.predioId === pId && l.unidade === u.nome
+    );
+    if (!jaExisteCaucao) {
+      const caucaoData = new Date(caucaoDataStr + 'T12:00:00');
+      db.financeiro.lancamentos.push({
+        id: Date.now(),
+        tipo: 'receita',
+        categoria: 'caucao',
+        valor: caucaoValor,
+        data: caucaoDataStr,
+        mes: caucaoData.getMonth(),
+        ano: caucaoData.getFullYear(),
+        predioId: pId,
+        unidade: u.nome,
+        inquilinoNome: document.getElementById('inqNome').value,
+        observacao: 'Caução recebida'
+      });
     }
+  }
 
-    function saveInquilino() {
-        const pId = parseInt(document.getElementById('inqPredioId').value);
-        const uId = document.getElementById('inqUnidadeId').value;
-        const p = db.predios.find(x => x.id === pId);
-        const u = p.unidades.find(x => x.id === uId);
-        const pagamentos = u.inquilino?.pagamentos || 
-  Array.from({ length: 12 }, () => ({ pago: false }));
-
-const caucaoDataFinal =
-  document.getElementById('inqCaucaoData').value ||
-  new Date().toISOString().split('T')[0];
-
-u.inquilino = {
-  id: u.inquilino?.id || Math.random().toString(36).substr(2, 9),
-  nome: document.getElementById('inqNome').value,
-  telefone: document.getElementById('inqTelefone').value,
-  valor: moedaParaNumero(document.getElementById('inqValor').value),
-  venc: document.getElementById('inqVenc').value,
-
-  ativo: true,
-  dataEntrada: u.inquilino?.dataEntrada || new Date().toISOString().split('T')[0],
-  dataSaida: null,
-
-  pagamentos: pagamentos
-};
-
-    // ================================
-// REGISTRO DE CAUÇÃO (FINANCEIRO)
-// ================================
-const caucaoValor = moedaParaNumero(
-  document.getElementById('inqCaucao').value
-);
-
-const caucaoDataStr =
-  document.getElementById('inqCaucaoData').value;
-
-if (!caucaoDataStr && caucaoValor > 0) {
-  alert("Informe a data da caução.");
-  return;
+  u.status = 'ocupado';
+  closeModal('modalInquilino');
+  save();
+  viewPredio(pId);
 }
-
-const caucaoData = new Date(caucaoDataStr + 'T12:00:00');
-
-const jaExisteCaucao = db.financeiro.lancamentos?.some(
-  l =>
-    l.categoria === 'caucao' &&
-    l.predioId === pId &&
-    l.unidade === u.nome
-);
-
-if (caucaoValor > 0 && !jaExisteCaucao) {
-
-  db.financeiro.lancamentos.push({
-    id: Date.now(),
-    tipo: 'receita',
-    categoria: 'caucao',
-    valor: caucaoValor,
-    data: caucaoData.toISOString().split('T')[0],
-    mes: caucaoData.getMonth(),
-    ano: caucaoData.getFullYear(),
-    predioId: pId,
-    unidade: u.nome,
-    inquilinoNome: document.getElementById('inqNome').value,
-    observacao: 'Caução recebida'
-  });
-
-}
-
-
-        
-        u.status = 'ocupado';
-        closeModal('modalInquilino');
-        save();
-        viewPredio(pId);
-    }
 
 function encerrarContrato() {
 
@@ -1660,72 +1664,69 @@ function confirmarPagamento() {
   const inq = findInquilinoById(currentInquilinoId);
   if (!inq) return;
 
-  const mes = window.mesBaixaAtual;
-
   const aluguel = parseFloat(document.getElementById('bpAluguel').value) || 0;
   const juros = parseFloat(document.getElementById('bpJuros').value) || 0;
   const data = document.getElementById('bpData').value || null;
 
-  inq.pagamentos[mes] = {
+  if (!data) { alert("Data inválida."); return; }
+
+  // ✅ FIX 1: usa o mês do GRID (o que o usuário clicou), não o mês da data
+  const mesGrid = window.mesBaixaAtual;
+
+  const dataObj = new Date(data + 'T12:00:00');
+  const mes = dataObj.getMonth(); // só para o lançamento financeiro
+  const ano = dataObj.getFullYear();
+
+  // ✅ salva no array de pagamentos na posição CORRETA (mês do grid)
+  inq.pagamentos[mesGrid] = {
     pago: true,
     aluguel: aluguel,
     juros: juros,
     data: data
   };
 
-// ================================
-// REGISTRO FINANCEIRO (HISTÓRICO)
-// ================================
+  if (!db.financeiro.lancamentos) db.financeiro.lancamentos = [];
 
-if (!db.financeiro.lancamentos) {
-  db.financeiro.lancamentos = [];
-}
+  const unidadeNome = db.predios
+    .find(p => p.id === currentViewingPredioId)
+    ?.unidades
+    ?.find(u => u.inquilino && u.inquilino.id === currentInquilinoId)
+    ?.nome || '';
 
-// aluguel
-db.financeiro.lancamentos.push({
-  id: Date.now(),
-  tipo: 'receita',
-  categoria: 'aluguel',
-  valor: aluguel,
-  data: data,
-  mes: mes,
-  ano: new Date().getFullYear(),
-  predioId: currentViewingPredioId,
-unidade: db.predios
-  .find(p => p.id === currentViewingPredioId)
-  .unidades
-  .find(u => u.inquilino && u.inquilino.id === currentInquilinoId)
-  ?.nome || '',
-  inquilinoNome: inq.nome,
-  observacao: 'Aluguel mensal'
-});
-
-// juros / multa
-if (juros > 0) {
   db.financeiro.lancamentos.push({
-    id: Date.now() + 1,
+    id: Date.now(),
     tipo: 'receita',
-    categoria: 'juros',
-    valor: juros,
+    categoria: 'aluguel',
+    valor: aluguel,
     data: data,
     mes: mes,
-    ano: 2026,
+    ano: ano,
     predioId: currentViewingPredioId,
-    unidade: null,
+    unidade: unidadeNome,
     inquilinoNome: inq.nome,
-    observacao: 'Juros / multa'
+    observacao: `Aluguel mensal (ref. ${MESES[mesGrid]})`
   });
-}
 
-
+  if (juros > 0) {
+    db.financeiro.lancamentos.push({
+      id: Date.now() + 1,
+      tipo: 'receita',
+      categoria: 'juros',
+      valor: juros,
+      data: data,
+      mes: mes,
+      ano: ano,
+      predioId: currentViewingPredioId,
+      unidade: unidadeNome,
+      inquilinoNome: inq.nome,
+      observacao: 'Juros / multa'
+    });
+  }
 
   save();
   closeModal('modalBaixaPagamento');
   renderPagamentosGrid(inq);
 }
-
-
-
 function reverterPagamento(mesIndex) {
   const inq = findInquilinoById(currentInquilinoId);
   if (!inq) return;
@@ -1915,28 +1916,23 @@ function carregarFiltroPredios(){
 }
 
 function abrirFinanceiro() {
-
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewFinanceiro').classList.remove('hidden');
 
   const agora = new Date();
 
-  // 🔹 mês atual
-  document.getElementById('filtroMes').value = agora.getMonth().toString();
+  // ✅ FIX 4: padrão "all" para não esconder meses anteriores
+document.getElementById('filtroMes').value = new Date().getMonth().toString();
+  document.getElementById('filtroAno').value = agora.getFullYear().toString();
 
-  // 🔹 carrega filtros
   carregarFiltroPredios();
   carregarFiltroAnos();
 
-  // 🔹 FORÇA o ano atual depois de carregar
   document.getElementById('filtroAno').value = agora.getFullYear().toString();
-
-  // 🔹 AGORA sim calcula
   calcularFinanceiro();
+  renderDespesas();
 }
-
-
 function voltarParaPortfolio(){
 
   document.getElementById('viewPortfolio').style.display = 'block';
@@ -2881,6 +2877,7 @@ function carregarFiltroAnos() {
 
   el.addEventListener('change', () => {
     calcularFinanceiro();
+    renderDespesas();
   });
 });
 
