@@ -16,7 +16,7 @@
 }
         :root{ --bg:#f8fafc; --primary:#1e3a8a; --border:#e2e8f0; }
         body{ font-family: 'Inter', sans-serif; background:var(--bg); color:#1e293b; }
-        .sidebar{ background:#0f172a; min-height:100vh; width:260px; position:fixed; color:white; padding:20px; }
+        .sidebar{ background:#475569; min-height:100vh; width:260px; position:fixed; color:white; padding:20px; }
         .main{ margin-left: 260px; padding:40px; }
 .card{
   background:white;
@@ -33,11 +33,21 @@
   overflow-y:auto;
 }
         .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
-       .btn{
-  padding:8px 14px;              /* ⬅️ botão mais baixo */
-  border-radius:10px;
-  font-weight:600;               /* ⬅️ menos “gritado” */
+      .btn{
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:600;
   font-size:14px;
+  cursor:pointer;
+  transition:all .25s ease;
+  border:none;
+
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
 
   cursor:pointer;
   transition:all .2s ease;
@@ -111,6 +121,13 @@ label{
     transition: left 0.3s ease;
   }
 
+.sidebar nav div{
+  transition: all .25s ease;
+}
+
+.sidebar nav div:hover{
+  transform: translateX(4px);
+}
   .sidebar.open {
     left: 0;
   }
@@ -173,7 +190,7 @@ label{
 </div>
 
     <!-- TOPO MOBILE -->
-<div class="md:hidden flex items-center justify-between p-4 bg-slate-900 text-white">
+<div class="md:hidden flex items-center justify-between p-4 bg-gray-800 text-white">
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
   <span class="font-bold">Bandeira's</span>
 </div>
@@ -181,24 +198,23 @@ label{
 
 <div class="sidebar">
     <!-- NOVO DESIGN DA MARCA -->
-    <div class="mb-10 p-2 bg-blue-900 rounded-lg shadow-xl">
-        <h2 class="text-xl font-extrabold italic text-center">Bandeira's</h2>
-        <p class="text-xs text-center font-medium text-blue-300">Gestão Financeira</p>
-    </div>
+<div class="mb-10 bg-slate-700 p-3 rounded-xl">
+    <img src="logo.png" alt="Bandeira's" class="w-full object-contain">
+</div>
     <nav class="space-y-2">
 <div
 onclick="voltarParaPortfolio(); fecharMenuMobile()"
-  class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+  class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
   <i class="fas fa-home"></i> Portfólio 2026
 </div>
 <div onclick="abrirFinanceiro(); fecharMenuMobile()"
-     class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+     class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
   📊 Financeiro
 </div>
 
         <div
   onclick="abrirRelatorioClientes(); fecharMenuMobile()"
-  class="p-3 bg-slate-800 rounded-lg cursor-pointer flex items-center gap-3 hover:bg-slate-700">
+  class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
   👤 Relatório de Clientes
 </div>
 
