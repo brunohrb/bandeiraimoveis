@@ -863,9 +863,13 @@ function estaInadimplente(inquilino) {
   // 🔴 qualquer mês ANTERIOR não pago
   for (let mes = 0; mes < mesAtual; mes++) {
     const pag = inquilino.pagamentos[mes];
-    if (!pag || pag.pago !== true) {
-      return true;
-    }
+const pago =
+  pag === true ||
+  (pag && pag.pago === true);
+
+if (!pago) {
+  return true;
+}
   }
 
   // 🟡 mês atual: só depois do vencimento
@@ -1204,11 +1208,21 @@ document.getElementById('pagamentosTitulo').innerText =
     }
     
     function togglePagamento(mesIndex) {
-        const inq = findInquilinoById(currentInquilinoId);
-        inq.pagamentos[mesIndex] = !inq.pagamentos[mesIndex];
-        save(); 
-        renderPagamentosGrid(inq); 
-    }
+  const inq = findInquilinoById(currentInquilinoId);
+
+  const atual = inq.pagamentos[mesIndex];
+
+  const pago =
+    atual === true ||
+    (atual && atual.pago === true);
+
+  inq.pagamentos[mesIndex] = {
+    pago: !pago
+  };
+
+  save();
+  renderPagamentosGrid(inq);
+}
 
     function renderPagamentosGrid(inq) {
   const grid = document.getElementById('gridPagamentos');
@@ -1675,7 +1689,7 @@ db.financeiro.lancamentos.push({
   valor: aluguel,
   data: data,
   mes: mes,
-  ano: 2026,
+  ano: new Date().getFullYear(),
   predioId: currentViewingPredioId,
 unidade: db.predios
   .find(p => p.id === currentViewingPredioId)
@@ -1947,14 +1961,17 @@ function gerarContasReceber(){
             unidade: u.nome,
             inquilino: u.inquilino.nome,
             mes,
-            ano: 2026,
+            ano: new Date().getFullYear(),
             valor: parseFloat(u.inquilino.valor),
             juros: 0,
 status:
-  u.inquilino.pagamentos[mes] &&
-  u.inquilino.pagamentos[mes].pago === true
-    ? 'pago'
-    : 'aberto'
+(
+  u.inquilino.pagamentos[mes] === true ||
+  (u.inquilino.pagamentos[mes] &&
+   u.inquilino.pagamentos[mes].pago === true)
+)
+  ? 'pago'
+  : 'aberto'
           });
         }
       }
@@ -3137,6 +3154,7 @@ function dataBRparaISO(dataBR) {
     
 </body>
 </html>
+
 
 
 
