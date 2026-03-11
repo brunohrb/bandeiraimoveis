@@ -218,7 +218,12 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   👤 Relatório de Clientes
 </div>
 
-        
+<div
+  onclick="abrirConfiguracoes(); fecharMenuMobile()"
+  class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
+  ⚙️ Configurações
+</div>
+
     </nav>
 </div>
 
@@ -284,8 +289,6 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
 
-<!-- LINHA 1: LISTA + CARD GRANDE -->
-<!-- LINHA 2: CARDS RESUMO -->
 <!-- CARDS DO DASHBOARD -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
 
@@ -325,9 +328,6 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     R$ 0,00
   </p>
 </div>
-
-
-  <!-- CONSOLIDADO EMBAIXO, LARGO -->
 
 </div>
 
@@ -419,7 +419,76 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
 </div>
 
-    
+<!-- VIEW CONFIGURAÇÕES -->
+<div id="viewConfiguracoes" class="hidden">
+
+  <h1 class="text-2xl sm:text-3xl font-black mb-6">⚙️ CONFIGURAÇÕES</h1>
+
+  <!-- CARDS BACKUP / RESTAURAR -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+    <!-- CARD BACKUP -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+      <div class="mb-3">
+        <h2 class="text-base font-black">📊 Fazer Backup</h2>
+        <p class="text-slate-500 text-xs mt-1">Exporta todos os dados em Excel (.xlsx). Guarde em local seguro.</p>
+      </div>
+      <button
+        onclick="exportarExcel(); registrarLog('Backup Excel exportado')"
+        style="width:100%; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; border:none; background:#1e3a8a; color:white; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto;">
+        📥 Baixar Backup Excel
+      </button>
+    </div>
+
+    <!-- CARD RESTAURAR -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+      <div class="mb-3">
+        <h2 class="text-base font-black">♻️ Restaurar Backup</h2>
+        <p class="text-slate-500 text-xs mt-1">Importa um Excel de backup. <strong class="text-red-600">Substitui todos os dados atuais.</strong></p>
+      </div>
+      <label style="width:100%; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; border:none; background:#dc2626; color:white; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto;">
+        📤 Selecionar arquivo Excel
+        <input type="file" accept=".xlsx" class="hidden" onchange="importarExcelConfiguracoes(this)">
+      </label>
+    </div>
+
+  </div>
+
+  <!-- LOG DO SISTEMA -->
+  <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm">
+
+    <!-- Cabeçalho do log -->
+    <div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+      <div>
+        <h2 class="text-base font-black">📋 Log do Sistema</h2>
+        <p class="text-slate-400 text-xs mt-1">Registro de todas as ações realizadas</p>
+      </div>
+      <button
+        onclick="limparLog()"
+        style="padding:8px 14px; border-radius:10px; font-weight:600; font-size:12px; cursor:pointer; border:1px solid #fca5a5; background:#fff1f2; color:#dc2626; white-space:nowrap; flex-shrink:0;">
+        🗑️ Limpar log
+      </button>
+    </div>
+
+    <!-- Tabela com scroll horizontal no mobile -->
+    <div class="border rounded-xl overflow-hidden overflow-x-auto">
+      <table class="w-full text-sm" style="min-width:460px;">
+        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+          <tr>
+            <th class="p-3 text-left" style="min-width:140px;">Data/Hora</th>
+            <th class="p-3 text-left">Ação</th>
+            <th class="p-3 text-left" style="min-width:80px;">Usuário</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaLog" class="divide-y divide-slate-100"></tbody>
+      </table>
+      <p id="logVazio" class="text-center text-slate-400 text-sm py-8">Nenhum registro encontrado.</p>
+    </div>
+
+  </div>
+
+</div>
+
 <div id="viewPortfolio">
     <header class="flex justify-between items-center mb-8">
         <div>
@@ -686,10 +755,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
   SUPABASE_KEY
 );
 
-/* ============================
-   🔐 LOGIN ONLINE (SENHA ÚNICA)
-============================ */
-
 function estaLogado() {
   return localStorage.getItem("auth_bandeiras") === "ok";
 }
@@ -720,7 +785,7 @@ if (!data) {
   if (senhaDigitada === data.valor) {
     localStorage.setItem("auth_bandeiras", "ok");
     document.getElementById("loginOverlay").style.display = "none";
-    carregarSistema(); // ⬅️ agora sim carrega
+    carregarSistema();
   } else {
     erro.classList.remove("hidden");
   }
@@ -771,16 +836,9 @@ function abrirArquivoBase64(base64, tipo) {
   document.body.classList.remove('menu-open');
 }
 
-    // ================================
-// MENU MOBILE (SIDEBAR)
-// ================================
-
-
 function toggleMenu() {
   const sidebar = document.querySelector('.sidebar');
   sidebar.classList.toggle('open');
-
-  // controla estado do corpo da página
   document.body.classList.toggle('menu-open');
 }
 
@@ -805,7 +863,6 @@ async function carregarSistema() {
   if (data && data.dados) {
     db = data.dados;
   } else {
-    // primeira vez (banco vazio)
     db = {
       predios: [],
       financeiro: {
@@ -827,10 +884,9 @@ carregarFiltroAnos();
 
 window.onload = function () {
 
-  // 🔐 bloqueia acesso até validar senha
   if (!estaLogado()) {
     document.getElementById("loginOverlay").style.display = "flex";
-    return; // ⛔ NÃO carrega o sistema
+    return;
   }
 
   document.getElementById("loginOverlay").style.display = "none";
@@ -838,16 +894,10 @@ window.onload = function () {
 };
 
 
-// ================================
-// MIGRAÇÃO SEGURA DO BANCO
-// ================================
-
-// garante estrutura de despesas
 if (!db.despesas) {
   db.despesas = [];
 }
 
-// ajusta pagamentos antigos (true/false) para objeto
 db.predios.forEach(predio => {
   predio.unidades.forEach(unidade => {
     if (unidade.inquilino && Array.isArray(unidade.inquilino.pagamentos)) {
@@ -863,13 +913,12 @@ db.predios.forEach(predio => {
         if (p === false) {
           return { pago: false };
         }
-        return p; // já é objeto
+        return p;
       });
     }
   });
 });
 
-// salva migração automaticamente
     let currentArquivos = [];
 
     let currentViewingPredioId = null; 
@@ -883,7 +932,6 @@ function estaInadimplente(inquilino) {
   const diaHoje = HOJE.getDate();
   const diaVenc = parseInt(inquilino.venc);
 
-  // 🔴 qualquer mês ANTERIOR não pago
   for (let mes = 0; mes < mesAtual; mes++) {
     const pag = inquilino.pagamentos[mes];
 const pago =
@@ -895,7 +943,6 @@ if (!pago) {
 }
   }
 
-  // 🟡 mês atual: só depois do vencimento
   const pagAtual = inquilino.pagamentos[mesAtual];
   if ((!pagAtual || pagAtual.pago !== true) && diaHoje > diaVenc) {
     return true;
@@ -998,8 +1045,6 @@ if (estaInadimplente(u.inquilino)) {
 }
 
             
-            // Renderiza o link ou o traço '-' se não houver contrato
-// Renderiza anexos do inquilino (Contrato, RG, CPF, etc.)
 const arquivosNovos =
   Array.isArray(u.inquilino?.arquivos) ? u.inquilino.arquivos : [];
 
@@ -1051,7 +1096,6 @@ const contratoBtn = todosArquivos.length
                     <td>${contratoBtn}</td> 
                    <td class="text-right space-x-2 whitespace-nowrap">
 
-  <!-- EDITAR APARTAMENTO -->
   <button
     onclick="editarUnidade(${p.id}, '${u.id}')"
     class="text-slate-500 hover:text-blue-600"
@@ -1059,7 +1103,6 @@ const contratoBtn = todosArquivos.length
     ✏️
   </button>
 
-  <!-- EXCLUIR APARTAMENTO -->
   <button
     onclick="excluirUnidade(${p.id}, '${u.id}')"
     class="text-slate-500 hover:text-red-600"
@@ -1067,7 +1110,6 @@ const contratoBtn = todosArquivos.length
     🗑️
   </button>
 
-  <!-- ALUGAR / EDITAR INQUILINO -->
   <button
     onclick="editInquilino(${p.id}, '${u.id}')"
     class="text-blue-600 font-black text-xs uppercase hover:underline ml-2">
@@ -1135,7 +1177,6 @@ function editInquilino(predioId, unidadeId) {
   const pagamentos = u.inquilino?.pagamentos ||
     Array.from({ length: 12 }, () => ({ pago: false }));
 
-  // ✅ FIX 2: preserva arquivos existentes e adiciona novos
   const arquivosExistentes = u.inquilino?.arquivos || [];
   const todosArquivos = [...arquivosExistentes, ...currentArquivos];
 
@@ -1153,11 +1194,10 @@ function editInquilino(predioId, unidadeId) {
     ativo: true,
     dataEntrada: u.inquilino?.dataEntrada || new Date().toISOString().split('T')[0],
     dataSaida: null,
-    arquivos: todosArquivos, // ✅ salva arquivos
+    arquivos: todosArquivos,
     pagamentos: pagamentos
   };
 
-  // registro de caução
   const caucaoValor = moedaParaNumero(document.getElementById('inqCaucao').value);
   const caucaoDataStr = document.getElementById('inqCaucaoData').value;
 
@@ -1202,14 +1242,10 @@ function encerrarContrato() {
 
   if (!inq) return;
 
-  // marca encerramento no objeto (histórico)
   inq.ativo = false;
   inq.dataSaida = new Date().toISOString().split('T')[0];
 
-  // 🔥 REMOVE o inquilino da unidade
   u.inquilino = null;
-
-  // libera unidade
   u.status = 'vago';
 
   closeModal('modalInquilino');
@@ -1618,10 +1654,8 @@ function gerarContratoPDF() {
         y += 6;
     }
 
-// gera base64 do contrato
 const contratoBase64 = doc.output('datauristring');
 
-// adiciona contrato aos arquivos do inquilino
 currentArquivos.push({
   nome: `Contrato_${inqNome.value || 'Locacao'}.pdf`,
   tipo: 'application/pdf',
@@ -1629,7 +1663,6 @@ currentArquivos.push({
   categoria: 'contrato'
 });
 
-// baixa o PDF normalmente
 doc.save(`Contrato_${inqNome.value || 'Locacao'}.pdf`);
 
 }
@@ -1654,25 +1687,19 @@ function abrirBaixaPagamento(mesIndex) {
   const inq = findInquilinoById(currentInquilinoId);
   if (!inq) return;
 
-  // guarda o mês que está sendo baixado
   window.mesBaixaAtual = mesIndex;
 
-  // preenche valores padrão
   document.getElementById('bpAluguel').value = inq.valor || 0;
   document.getElementById('bpJuros').value = 0;
 
-  // data de hoje
   document.getElementById('bpData').value =
     new Date().toISOString().split('T')[0];
 
-  // título informativo
   document.getElementById('baixaSubtitulo').innerText =
     `${MESES[mesIndex]} • ${inq.nome}`;
 
-  // atualiza total
   atualizarTotalBaixa();
 
-  // abre o modal
   openModal('modalBaixaPagamento');
 }
 
@@ -1686,14 +1713,12 @@ function confirmarPagamento() {
 
   if (!data) { alert("Data inválida."); return; }
 
-  // ✅ FIX 1: usa o mês do GRID (o que o usuário clicou), não o mês da data
   const mesGrid = window.mesBaixaAtual;
 
   const dataObj = new Date(data + 'T12:00:00');
-  const mes = dataObj.getMonth(); // só para o lançamento financeiro
+  const mes = dataObj.getMonth();
   const ano = dataObj.getFullYear();
 
-  // ✅ salva no array de pagamentos na posição CORRETA (mês do grid)
   inq.pagamentos[mesGrid] = {
     pago: true,
     aluguel: aluguel,
@@ -1777,15 +1802,8 @@ const mesFiltro = mes === 'all' ? 'all' : Number(mes);
 let inadimplencia = 0;
 let contasReceber = 0;
 let lucro = 0;
-let caucaoFiltrada = 0;
 
 
-
-
-
-// ================================
-// INADIMPLÊNCIA REAL (VENCEU E NÃO PAGOU)
-// ================================
 inadimplencia = 0;
 
 db.predios.forEach(predio => {
@@ -1809,9 +1827,6 @@ if (estaInadimplente(u.inquilino)) {
 });
 
 
-  // ================================
-  // RECEITAS E DESPESAS (HISTÓRICO REAL)
-  // ================================
   if (!db.financeiro.lancamentos) {
     db.financeiro.lancamentos = [];
   }
@@ -1825,12 +1840,9 @@ if (predio !== 'all' && l.predioId && l.predioId != predio) return;
 
     if (l.tipo === 'receita') {
 
-
-
       if (l.categoria === 'aluguel') {
         alugueisRecebidos += l.valor;
       }
-
 
       if (l.categoria === 'juros') {
         jurosRecebidos += l.valor;
@@ -1839,9 +1851,6 @@ if (l.categoria === 'caucao') {
   caucaoSaldo += l.valor;
 }
 
-
-      // ================================
-
     }
 
     if (l.tipo === 'despesa') {
@@ -1849,12 +1858,6 @@ if (l.categoria === 'caucao') {
     }
   });
 
-  // ================================
-  // CONTAS A RECEBER / INADIMPLÊNCIA
-  // ================================
-// ================================
-// CONTAS A RECEBER (ABERTO)
-// ================================
 db.financeiro.contasReceber.forEach(c => {
 
   if (mes !== 'all' && c.mes != mes) return;
@@ -1890,9 +1893,6 @@ document.getElementById('finReceber').innerText =
     minimumFractionDigits: 2
   });
 
-// ================================
-// LUCRO
-// ================================
 lucro = alugueisRecebidos + jurosRecebidos - contasPagar;
 
 document.getElementById('finLucro').innerText =
@@ -1907,7 +1907,6 @@ function carregarPrediosDespesa() {
   const select = document.getElementById('despPredio');
   if (!select) return;
 
-  // limpa antes
   select.innerHTML = '<option value="">Selecione um prédio</option>';
 
   db.predios.forEach(p => {
@@ -1934,11 +1933,11 @@ function carregarFiltroPredios(){
 function abrirFinanceiro() {
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
+  document.getElementById('viewConfiguracoes').classList.add('hidden');
   document.getElementById('viewFinanceiro').classList.remove('hidden');
 
   const agora = new Date();
 
-  // ✅ FIX 4: padrão "all" para não esconder meses anteriores
 document.getElementById('filtroMes').value = new Date().getMonth().toString();
   document.getElementById('filtroAno').value = agora.getFullYear().toString();
 
@@ -1950,17 +1949,13 @@ document.getElementById('filtroMes').value = new Date().getMonth().toString();
   renderDespesas();
 }
 function voltarParaPortfolio(){
-
   document.getElementById('viewPortfolio').style.display = 'block';
   document.getElementById('viewFinanceiro').classList.add('hidden');
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
-
+  document.getElementById('viewConfiguracoes').classList.add('hidden');
 }
 
 
-// ================================
-// ESTADO INICIAL DA TELA (FORÇADO)
-// ================================
 function gerarContasReceber(){
   db.financeiro.contasReceber = [];
 
@@ -1991,15 +1986,6 @@ status:
   });
 }
 
-// INICIALIZA O SISTEMA AO ABRIR A PÁGINA
-
-// 1️⃣ garante que o financeiro existe
-
-
-
-// ================================
-// CONTAS PAGAS (DESPESAS)
-// ================================
 function adicionarDespesa({
   descricao,
   valor,
@@ -2033,6 +2019,7 @@ function adicionarDespesa({
 
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewConfiguracoes').classList.add('hidden');
   document.getElementById('viewRelatorioClientes').classList.remove('hidden');
 
   document.getElementById('buscaCliente').value = '';
@@ -2056,9 +2043,6 @@ const valor = moedaParaNumero(
     return;
   }
 
-  // =========================
-  // EDITAR DESPESA EXISTENTE
-  // =========================
   if (window.despesaEditandoId) {
 
     const d = db.financeiro.lancamentos.find(
@@ -2084,9 +2068,6 @@ const valor = moedaParaNumero(
       return;
   }
 
-  // =========================
-  // NOVA DESPESA
-  // =========================
   if (!db.financeiro.lancamentos) {
     db.financeiro.lancamentos = [];
   }
@@ -2208,7 +2189,6 @@ function editarDespesa(id){
   const d = db.financeiro.lancamentos.find(l => l.id === id);
   if(!d) return;
 
-  // preenche campos
   document.getElementById('despDescricao').value = d.observacao || '';
   document.getElementById('despCategoria').value = d.categoria;
 document.getElementById('despValor').value =
@@ -2219,7 +2199,6 @@ document.getElementById('despValor').value =
   document.getElementById('despFornecedor').value = d.fornecedor || '';
   document.getElementById('despPredio').value = d.predioId || '';
 
-  // guarda ID da despesa sendo editada
   window.despesaEditandoId = id;
 
   openModal('modalDespesa');
@@ -2233,8 +2212,7 @@ function avisarInquilinoWhatsApp(nome, telefone, valor, mesIndex, ano) {
   }
 
   const telefoneLimpo = telefone.replace(/\D/g, '');
-
-  const nomeMes = MESES[mesIndex]; // ← aqui está a correção
+  const nomeMes = MESES[mesIndex];
 
   const mensagem =
     `Olá ${nome}, tudo bem?\n\n` +
@@ -2266,7 +2244,7 @@ function avisarInquilinoAutomatico(inq) {
     return;
   }
 
-  const DIAS_AVISO = 5; // ⬅️ QUANTOS DIAS ANTES AVISA
+  const DIAS_AVISO = 5;
   const diasRestantes = diaVenc - diaHoje;
 
   const telefoneLimpo = inq.telefone.replace(/\D/g, '');
@@ -2274,7 +2252,6 @@ function avisarInquilinoAutomatico(inq) {
 
   let mensagem = '';
 
-  // 🔴 CASO 1 — ATRASADO
   if (diasRestantes < 0) {
 
     mensagem =
@@ -2283,7 +2260,6 @@ function avisarInquilinoAutomatico(inq) {
       `Por favor, nos informe sobre o pagamento.\n`;
 
   }
-  // 🟡 CASO 2 — VAI VENCER (ATÉ X DIAS)
   else if (diasRestantes <= DIAS_AVISO) {
 
     mensagem =
@@ -2292,7 +2268,6 @@ function avisarInquilinoAutomatico(inq) {
       `Qualquer dúvida, ficamos à disposição.\n`;
 
   }
-  // 🟢 CASO 3 — AINDA FALTA MUITO TEMPO
   else {
     alert("Este aluguel ainda não está próximo do vencimento.");
     return;
@@ -2316,12 +2291,8 @@ function removerPredio(predioId) {
 
   if (!confirmar) return;
 
-  // remove o prédio
   db.predios = db.predios.filter(x => x.id !== predioId);
 
-  // salva no localStorage
-
-  // redesenha a tela
     save();
   render();
 }
@@ -2373,7 +2344,6 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   document.getElementById('tituloHistoricoUnidade').innerText =
     `Histórico financeiro • ${predio.nome} • ${unidadeNome}`;
 
-  // filtra SOMENTE RECEITAS da unidade (aluguel, juros, caução)
   const dados = (db.financeiro.lancamentos || []).filter(l =>
     l.tipo === 'receita' &&
     l.predioId === predioId &&
@@ -2455,7 +2425,6 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     return;
   }
 
-  // nomes únicos vindos do financeiro
   const nomes = [...new Set(
     (db.financeiro.lancamentos || [])
       .filter(l => l.inquilinoNome)
@@ -2491,7 +2460,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   document.getElementById('listaClientesBusca').classList.add('hidden');
 
   const dados = (db.financeiro.lancamentos || [])
-  .map((l, index) => ({ ...l, _index: index })) // guarda índice real
+  .map((l, index) => ({ ...l, _index: index }))
   .filter(l => l.inquilinoNome === nome)
   .sort((a, b) => new Date(a.data) - new Date(b.data));
 
@@ -2537,7 +2506,6 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
   <td class="p-2">${l.observacao || '-'}</td>
 <td class="p-2 text-center whitespace-nowrap">
 
-  <!-- EDITAR -->
   <button
     class="text-blue-600 hover:underline text-sm mr-2"
     onclick="editarLancamentoRelatorio(${l._index})"
@@ -2545,7 +2513,6 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     ✏️
   </button>
 
-  <!-- EXCLUIR -->
   <button
     class="text-red-600 hover:underline text-sm"
     onclick="excluirLancamentoRelatorio(${l._index}, '${nome}')"
@@ -2587,7 +2554,6 @@ function renderListaArquivos() {
 function exportarExcel() {
   const wb = XLSX.utils.book_new();
 
-  // ===== Predios =====
   const predios = db.predios.map(p => ({
     predio_id: p.id,
     nome: p.nome
@@ -2598,7 +2564,6 @@ function exportarExcel() {
     'Predios'
   );
 
-  // ===== Unidades =====
   const unidades = [];
   db.predios.forEach(p => {
     p.unidades.forEach(u => {
@@ -2616,7 +2581,6 @@ function exportarExcel() {
     'Unidades'
   );
 
-  // ===== Inquilinos =====
   const inquilinos = [];
   const pagamentos = [];
 
@@ -2659,7 +2623,6 @@ function exportarExcel() {
     'Pagamentos'
   );
 
-  // ===== Financeiro =====
   XLSX.utils.book_append_sheet(
     wb,
     XLSX.utils.json_to_sheet(db.financeiro.lancamentos || []),
@@ -2685,7 +2648,6 @@ function importarExcel(input) {
     const pagamentos = XLSX.utils.sheet_to_json(wb.Sheets['Pagamentos']);
     const financeiro = XLSX.utils.sheet_to_json(wb.Sheets['Financeiro']);
 
-    // 🔄 reconstruir db
     db = {
       predios: [],
       financeiro: { lancamentos: financeiro }
@@ -2752,12 +2714,10 @@ function removerArquivoInquilino(predioId, unidadeId, index) {
   const unidade = predio.unidades.find(u => u.id === unidadeId);
   if (!unidade || !unidade.inquilino) return;
 
-  // remove do array novo
   if (Array.isArray(unidade.inquilino.arquivos)) {
     unidade.inquilino.arquivos.splice(index, 1);
   }
 
-  // se for contrato antigo, remove também
   if (unidade.inquilino.contrato) {
     delete unidade.inquilino.contrato;
   }
@@ -2774,13 +2734,11 @@ function migrarContratosAntigos() {
       const inq = unidade.inquilino;
       if (!inq) return;
 
-      // se tem contrato antigo
       if (inq.contrato && inq.contrato.base64) {
         if (!Array.isArray(inq.arquivos)) {
           inq.arquivos = [];
         }
 
-        // evita duplicar
         const jaExiste = inq.arquivos.some(a =>
           a.nome === inq.contrato.nome
         );
@@ -2797,7 +2755,6 @@ function migrarContratosAntigos() {
           alterou = true;
         }
 
-        // remove contrato antigo
         delete inq.contrato;
       }
     });
@@ -2809,46 +2766,6 @@ function migrarContratosAntigos() {
   }
 }
 
-function solicitarPermissaoNotificacao() {
-  if (!("Notification" in window)) return;
-
-  if (Notification.permission === "default") {
-    Notification.requestPermission();
-  }
-}
-
-function notificarInadimplentes() {
-
-  if (Notification.permission !== "granted") return;
-
-  let inadimplentes = [];
-
-  db.predios.forEach(p => {
-    p.unidades.forEach(u => {
-      if (u.status === 'ocupado' && u.inquilino) {
-
-        const mesAtual = HOJE.getMonth();
-        const diaVenc = parseInt(u.inquilino.venc);
-        const pagamento = u.inquilino.pagamentos[mesAtual];
-
-        if (estaInadimplente(u.inquilino)) {
-
-          inadimplentes.push(
-            `${u.inquilino.nome} (${p.nome} - ${u.nome})`
-          );
-        }
-      }
-    });
-  });
-
-  if (inadimplentes.length) {
-    new Notification("⚠️ Inadimplência detectada", {
-      body: inadimplentes.join('\n'),
-      icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png"
-    });
-  }
-}
-
 function carregarFiltroAnos() {
   const select = document.getElementById('filtroAno');
   if (!select) return;
@@ -2857,21 +2774,15 @@ function carregarFiltroAnos() {
 
   const anos = new Set();
 
-  // 🔹 pega anos das cauções PELO CADASTRO DO CLIENTE
-
-
-  // 🔹 pega anos de qualquer lançamento financeiro
   if (db.financeiro?.lancamentos) {
     db.financeiro.lancamentos.forEach(l => {
       if (l.ano) anos.add(l.ano);
     });
   }
 
-  // 🔹 fallback: ano atual
   const anoAtual = new Date().getFullYear();
   anos.add(anoAtual);
 
-  // 🔹 cria as opções
   [...anos].sort((a, b) => a - b).forEach(ano => {
     const opt = document.createElement('option');
     opt.value = ano;
@@ -2879,14 +2790,10 @@ function carregarFiltroAnos() {
     select.appendChild(opt);
   });
 
-  // 🔹 padrão: ano atual
   select.value = anoAtual.toString();
 }
 
 
-// ================================
-// FILTRO AUTOMÁTICO DO FINANCEIRO
-// ================================
 ['filtroMes', 'filtroAno', 'filtroPredio'].forEach(id => {
   const el = document.getElementById(id);
   if (!el) return;
@@ -2896,75 +2803,6 @@ function carregarFiltroAnos() {
     renderDespesas();
   });
 });
-
-function verFinanceiroCliente(nomeCliente) {
-  const container = document.getElementById('detalheFinanceiroCliente');
-  if (!container) {
-    alert('Container detalheFinanceiroCliente não existe');
-    return;
-  }
-
-  const lancamentos = db.financeiro.lancamentos.filter(l =>
-    l.inquilinoNome === nomeCliente
-  );
-
-  let html = `<h3>Financeiro de ${nomeCliente}</h3>`;
-
-  if (lancamentos.length === 0) {
-    html += '<p>Nenhum lançamento encontrado.</p>';
-  } else {
-    html += `
-      <table border="1" cellpadding="5">
-        <tr>
-          <th>Data</th>
-          <th>Tipo</th>
-          <th>Valor</th>
-          <th>Ação</th>
-        </tr>
-    `;
-
-    lancamentos.forEach((l, index) => {
-      html += `
-        <tr>
-          <td>${l.data || `${l.mes + 1}/${l.ano}`}</td>
-          <td>${l.categoria}</td>
-          <td>R$ ${Number(l.valor).toLocaleString('pt-BR')}</td>
-          <td>
-            <button onclick="excluirLancamentoCliente(${index})">🗑️</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += '</table>';
-  }
-
-  container.innerHTML = html;
-}
-
-function excluirLancamentoCliente(index) {
-  if (!confirm('Deseja excluir este lançamento?')) return;
-
-  db.financeiro.lancamentos.splice(index, 1);
-  salvarDB();
-  calcularFinanceiro();
-
-  alert('Lançamento removido.');
-}
-
-function excluirLancamentoFinanceiro(index, nomeCliente) {
-
-  if (!confirm(`Excluir este lançamento financeiro de ${nomeCliente}?`)) {
-    return;
-  }
-
-  db.financeiro.lancamentos.splice(index, 1);
-
-  save();
-  calcularFinanceiro();
-
-  alert('Lançamento removido com sucesso.');
-}
 
 function excluirLancamentoRelatorio(index, nomeCliente) {
 
@@ -2977,7 +2815,6 @@ function excluirLancamentoRelatorio(index, nomeCliente) {
   save();
   calcularFinanceiro();
 
-  // Recarrega o relatório do cliente
   selecionarClienteRelatorio(nomeCliente);
 
   alert('Lançamento removido com sucesso.');
@@ -2988,7 +2825,6 @@ function editarLancamentoRelatorio(index) {
   const l = db.financeiro.lancamentos[index];
   if (!l) return;
 
-  // 🔹 valor
   const novoValor = prompt(
     `Editar valor (${l.categoria})`,
     l.valor
@@ -3003,7 +2839,6 @@ function editarLancamentoRelatorio(index) {
     return;
   }
 
-  // 🔹 data (BR)
   const dataAtualBR = l.data
     ? new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')
     : '';
@@ -3026,11 +2861,10 @@ function editarLancamentoRelatorio(index) {
     return;
   }
 
-  // ✅ aplica mudanças REAIS
   l.valor = valorNumero;
   l.data = dataISO;
-  l.mes = dataObj.getMonth();      // mês correto
-  l.ano = dataObj.getFullYear();   // ano correto
+  l.mes = dataObj.getMonth();
+  l.ano = dataObj.getFullYear();
 
   save();
   calcularFinanceiro();
@@ -3056,6 +2890,129 @@ function dataBRparaISO(dataBR) {
 
   return `${ano}-${mes}-${dia}`;
 }
+
+// ================================
+// CONFIGURAÇÕES
+// ================================
+
+function abrirConfiguracoes() {
+  document.getElementById('viewPortfolio').style.display = 'none';
+  document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewRelatorioClientes').classList.add('hidden');
+  document.getElementById('viewConfiguracoes').classList.remove('hidden');
+  renderLog();
+}
+
+// ================================
+// LOG DO SISTEMA
+// ================================
+
+function registrarLog(acao) {
+  const logs = JSON.parse(localStorage.getItem('bandeiras_log') || '[]');
+  logs.unshift({
+    data: new Date().toLocaleString('pt-BR'),
+    acao: acao,
+    usuario: 'Admin'
+  });
+  // mantém só os últimos 200 registros
+  if (logs.length > 200) logs.splice(200);
+  localStorage.setItem('bandeiras_log', JSON.stringify(logs));
+}
+
+function renderLog() {
+  const logs = JSON.parse(localStorage.getItem('bandeiras_log') || '[]');
+  const tbody = document.getElementById('tabelaLog');
+  const vazio = document.getElementById('logVazio');
+
+  tbody.innerHTML = '';
+
+  if (logs.length === 0) {
+    vazio.style.display = 'block';
+    return;
+  }
+
+  vazio.style.display = 'none';
+
+  logs.forEach(l => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50';
+    tr.innerHTML = `
+      <td class="p-3 text-slate-400 text-xs font-mono">${l.data}</td>
+      <td class="p-3 text-slate-800">${l.acao}</td>
+      <td class="p-3 text-slate-500 text-xs">${l.usuario}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function limparLog() {
+  if (!confirm('Deseja limpar todo o log do sistema?')) return;
+  localStorage.removeItem('bandeiras_log');
+  renderLog();
+}
+
+// ================================
+// RESTAURAR BACKUP — via Configurações
+// ================================
+function importarExcelConfiguracoes(input) {
+  if (!confirm('⚠️ Isso substituirá TODOS os dados atuais pelo backup. Confirma?')) {
+    input.value = '';
+    return;
+  }
+  importarExcel(input);
+  registrarLog('Backup restaurado via Excel');
+}
+
+// ================================
+// INTERCEPTAR AÇÕES PARA LOG
+// ================================
+const _addPredio = addPredio;
+addPredio = function() {
+  const nome = document.getElementById('pNome').value;
+  _addPredio();
+  if (nome) registrarLog(`Prédio criado: "${nome}"`);
+};
+
+const _saveInquilino = saveInquilino;
+saveInquilino = function() {
+  const nome = document.getElementById('inqNome').value;
+  _saveInquilino();
+  if (nome) registrarLog(`Inquilino salvo: "${nome}"`);
+};
+
+const _encerrarContrato = encerrarContrato;
+encerrarContrato = function() {
+  const nome = document.getElementById('inqNome').value;
+  _encerrarContrato();
+  if (nome) registrarLog(`Contrato encerrado: "${nome}"`);
+};
+
+const _confirmarPagamento = confirmarPagamento;
+confirmarPagamento = function() {
+  const inq = findInquilinoById(currentInquilinoId);
+  _confirmarPagamento();
+  if (inq) registrarLog(`Pagamento registrado: ${inq.nome} — ${MESES[window.mesBaixaAtual] || ''}`);
+};
+
+const _salvarDespesa = salvarDespesa;
+salvarDespesa = function() {
+  const desc = document.getElementById('despDescricao').value;
+  _salvarDespesa();
+  if (desc) registrarLog(`Despesa ${window.despesaEditandoId ? 'editada' : 'adicionada'}: "${desc}"`);
+};
+
+const _excluirDespesa = excluirDespesa;
+excluirDespesa = function(id) {
+  registrarLog(`Despesa excluída (id: ${id})`);
+  _excluirDespesa(id);
+};
+
+const _removerPredio = removerPredio;
+removerPredio = function(predioId) {
+  const p = db.predios.find(x => x.id === predioId);
+  if (p) registrarLog(`Prédio excluído: "${p.nome}"`);
+  _removerPredio(predioId);
+};
 
 
 </script>
@@ -3090,10 +3047,6 @@ function dataBRparaISO(dataBR) {
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label>Valor (R$)</label>
-
-
-
-            
 <input
   id="despValor"
   class="input"
@@ -3101,9 +3054,6 @@ function dataBRparaISO(dataBR) {
   placeholder="0,00"
   oninput="this.value = formatarMoedaBR(this.value)">
         </div>
-
-
-          
 
         <div>
           <label>Data</label>
@@ -3167,7 +3117,3 @@ function dataBRparaISO(dataBR) {
     
 </body>
 </html>
-
-
-
-
