@@ -151,6 +151,57 @@ label{
 
 }
 
+/* READONLY MODE */
+body.readonly .readonly-hidden {
+  display: none !important;
+}
+
+.readonly-badge {
+  display: none;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+body.readonly .readonly-badge {
+  display: inline-block;
+}
+
+/* USER CHIP in sidebar */
+.user-chip {
+  background: rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* User management table */
+.user-row td { padding: 10px 12px; font-size: 13px; }
+.role-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.role-admin { background: #dbeafe; color: #1e40af; }
+.role-readonly { background: #f3f4f6; color: #6b7280; }
+
       
     </style>
 </head>
@@ -162,13 +213,28 @@ label{
      class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90">
 
   <div class="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-sm">
-    <h2 class="text-2xl font-black text-center text-slate-900 mb-2">
+    <div class="flex justify-center mb-4">
+      <div class="w-14 h-14 bg-blue-900 rounded-2xl flex items-center justify-center">
+        <span class="text-white text-2xl font-black">B</span>
+      </div>
+    </div>
+    <h2 class="text-2xl font-black text-center text-slate-900 mb-1">
       Bandeira's
     </h2>
     <p class="text-center text-slate-500 text-sm mb-6">
       Acesso restrito • Gestão Financeira
     </p>
 
+    <label class="text-xs font-bold text-slate-500 uppercase">Usuário</label>
+    <input
+      id="loginUser"
+      type="text"
+      placeholder="Digite seu usuário"
+      class="input mb-3"
+      onkeydown="if(event.key==='Enter') document.getElementById('loginSenha').focus()"
+    >
+
+    <label class="text-xs font-bold text-slate-500 uppercase">Senha</label>
     <input
       id="loginSenha"
       type="password"
@@ -179,12 +245,13 @@ label{
 
     <button
       onclick="fazerLogin()"
-      class="btn btn-primary w-full">
+      id="btnEntrar"
+      class="btn btn-primary w-full justify-center">
       Entrar
     </button>
 
     <p id="loginErro" class="text-red-600 text-sm text-center mt-4 hidden">
-      Senha incorreta
+      Usuário ou senha incorretos
     </p>
   </div>
 </div>
@@ -225,6 +292,19 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
     </nav>
+
+    <!-- User chip at bottom of sidebar -->
+    <div class="mt-8">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-xs font-bold truncate" id="sidebarNome">Admin</p>
+          <p class="text-slate-400 text-[10px]" id="sidebarRole">Administrador</p>
+        </div>
+        <button onclick="logoutSistema()" title="Sair" class="text-slate-400 hover:text-red-400 transition text-sm">⏻</button>
+      </div>
+      <span class="readonly-badge mt-2 text-center w-full">👁️ Modo somente leitura</span>
+    </div>
 </div>
 
 <div class="main">
@@ -263,7 +343,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
 
 
-<button class="btn btn-primary" onclick="abrirModalDespesa()">
+<button class="btn btn-primary readonly-hidden" onclick="abrirModalDespesa()">
   ➕ Nova despesa
 </button>
 
@@ -274,7 +354,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     📊 Exportar Excel (Backup)
   </button>
 
-  <label class="btn btn-ghost cursor-pointer">
+  <label class="btn btn-ghost cursor-pointer readonly-hidden">
     ♻️ Restaurar via Excel
     <input
       type="file"
@@ -410,7 +490,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
     <div class="flex justify-between items-center mt-4">
       <div id="resumoCliente" class="font-black"></div>
-      <button class="btn btn-primary" onclick="exportarRelatorioClientePDF()">
+      <button class="btn btn-primary readonly-hidden" onclick="exportarRelatorioClientePDF()">
         📄 Exportar PDF
       </button>
     </div>
@@ -441,7 +521,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
     </div>
 
     <!-- CARD RESTAURAR -->
-    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col readonly-hidden">
       <div class="mb-3">
         <h2 class="text-base font-black">♻️ Restaurar Backup</h2>
         <p class="text-slate-500 text-xs mt-1">Importa um Excel de backup. <strong class="text-red-600">Substitui todos os dados atuais.</strong></p>
@@ -450,6 +530,37 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
         📤 Selecionar arquivo Excel
         <input type="file" accept=".xlsx" class="hidden" onchange="importarExcelConfiguracoes(this)">
       </label>
+    </div>
+
+  </div>
+
+  <!-- GERENCIAR USUÁRIOS (apenas admin) -->
+  <div id="secaoUsuarios" class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm mb-6 readonly-hidden">
+
+    <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
+      <div>
+        <h2 class="text-base font-black">👥 Gerenciar Usuários</h2>
+        <p class="text-slate-400 text-xs mt-1">Crie usuários com acesso total ou somente leitura</p>
+      </div>
+      <button
+        onclick="abrirModalNovoUsuario()"
+        style="padding:8px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; border:none; background:#1e3a8a; color:white; display:flex; align-items:center; gap:6px;">
+        ➕ Novo usuário
+      </button>
+    </div>
+
+    <div class="border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+          <tr>
+            <th class="p-3 text-left">Nome</th>
+            <th class="p-3 text-left">Login</th>
+            <th class="p-3 text-left">Perfil</th>
+            <th class="p-3 text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaUsuarios" class="divide-y divide-slate-100"></tbody>
+      </table>
     </div>
 
   </div>
@@ -465,6 +576,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
       </div>
       <button
         onclick="limparLog()"
+        class="readonly-hidden"
         style="padding:8px 14px; border-radius:10px; font-weight:600; font-size:12px; cursor:pointer; border:1px solid #fca5a5; background:#fff1f2; color:#dc2626; white-space:nowrap; flex-shrink:0;">
         🗑️ Limpar log
       </button>
@@ -495,7 +607,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">GESTÃO FINANCEIRA</h1>
             <p class="text-slate-500">Controle de prédios e inquilinos. Data Atual: 06/01/2026</p>
         </div>
-        <button class="btn btn-primary" onclick="openModal('modalPredio')"><i class="fas fa-plus"></i> NOVO PRÉDIO</button>
+        <button class="btn btn-primary readonly-hidden" onclick="openModal('modalPredio')"><i class="fas fa-plus"></i> NOVO PRÉDIO</button>
     </header>
 <div id="gridPredios" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </div>
@@ -631,11 +743,11 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
             </div>
             <div class="flex gap-2 pt-4">
-<button class="btn btn-ghost w-full mb-2" onclick="gerarContratoPDF()">
+<button class="btn btn-ghost w-full mb-2 readonly-hidden" onclick="gerarContratoPDF()">
     📄 Gerar contrato (PDF)
 </button>
-                <button class="btn btn-primary flex-1 justify-center" onclick="saveInquilino()">SALVAR DADOS</button>
-                <button id="btnVacar" class="btn btn-ghost text-red-600" onclick="encerrarContrato()">
+                <button class="btn btn-primary flex-1 justify-center readonly-hidden" onclick="saveInquilino()">SALVAR DADOS</button>
+                <button id="btnVacar" class="btn btn-ghost text-red-600 readonly-hidden" onclick="encerrarContrato()">
   ENCERRAR CONTRATO
 </button>
 
@@ -656,7 +768,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
 
 <button
-  class="btn btn-primary w-full mb-4"
+  class="btn btn-primary w-full mb-4 readonly-hidden"
   onclick="avisarInquilinoAutomatico(findInquilinoById(currentInquilinoId))">
   📲 Avisar inquilino pelo WhatsApp
 </button>
@@ -728,7 +840,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 
     <div class="flex gap-2 mt-6">
      <button
-  class="btn btn-primary flex-1 justify-center"
+  class="btn btn-primary flex-1 justify-center readonly-hidden"
   onclick="confirmarPagamento()">
   Confirmar pagamento
 </button>
@@ -756,42 +868,104 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 );
 
 function estaLogado() {
-  return localStorage.getItem("auth_bandeiras") === "ok";
+  const auth = localStorage.getItem("auth_bandeiras");
+  if (!auth) return false;
+  // Compatibilidade com formato antigo "ok"
+  if (auth === "ok") return true;
+  try { return !!JSON.parse(auth); } catch { return false; }
+}
+
+function usuarioAtual() {
+  const auth = localStorage.getItem("auth_bandeiras");
+  if (!auth || auth === "ok") return { login: 'admin', role: 'admin', nome: 'Administrador' };
+  try { return JSON.parse(auth); } catch { return null; }
+}
+
+function isReadOnly() {
+  return usuarioAtual()?.role === 'readonly';
+}
+
+function atualizarSidebarUsuario() {
+  const u = usuarioAtual();
+  if (!u) return;
+  const inicial = (u.nome || u.login || '?')[0].toUpperCase();
+  const el = document.getElementById('sidebarAvatar');
+  const nomeEl = document.getElementById('sidebarNome');
+  const roleEl = document.getElementById('sidebarRole');
+  if (el) el.textContent = inicial;
+  if (nomeEl) nomeEl.textContent = u.nome || u.login;
+  if (roleEl) roleEl.textContent = u.role === 'readonly' ? 'Somente leitura' : 'Administrador';
 }
 
 async function fazerLogin() {
+  const loginDigitado = document.getElementById("loginUser").value.trim();
   const senhaDigitada = document.getElementById("loginSenha").value;
   const erro = document.getElementById("loginErro");
+  const btn = document.getElementById("btnEntrar");
   erro.classList.add("hidden");
 
+  if (!loginDigitado || !senhaDigitada) {
+    erro.textContent = 'Preencha usuário e senha.';
+    erro.classList.remove("hidden");
+    return;
+  }
+
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
+
+  // Carrega dados do Supabase para verificar usuários
   const { data, error } = await supabaseClient
-    .from("config_sistema")
-    .select("valor")
-    .eq("id", "senha_global")
+    .from('backup_sistema')
+    .select('dados')
+    .eq('id', 'principal')
     .single();
 
-if (error) {
-  console.error(error);
-  alert("Erro Supabase: " + error.message);
-  return;
-}
+  btn.textContent = 'Entrar';
+  btn.disabled = false;
 
-if (!data) {
-  alert("Senha não encontrada no banco.");
-  return;
-}
+  const usuarios = data?.dados?.usuarios || [];
 
+  // Fallback: se não há usuários ainda, checar senha_global (migração)
+  if (usuarios.length === 0) {
+    const { data: senhaData } = await supabaseClient
+      .from('config_sistema')
+      .select('valor')
+      .eq('id', 'senha_global')
+      .single();
 
-  if (senhaDigitada === data.valor) {
-    localStorage.setItem("auth_bandeiras", "ok");
+    if (senhaData && senhaDigitada === senhaData.valor && loginDigitado === 'admin') {
+      localStorage.setItem("auth_bandeiras", JSON.stringify({
+        login: 'admin', role: 'admin', nome: 'Administrador'
+      }));
+      document.getElementById("loginOverlay").style.display = "none";
+      carregarSistema();
+      return;
+    }
+    erro.textContent = 'Usuário ou senha incorretos.';
+    erro.classList.remove("hidden");
+    return;
+  }
+
+  const usuario = usuarios.find(u =>
+    u.login === loginDigitado && u.senha === senhaDigitada
+  );
+
+  if (usuario) {
+    localStorage.setItem("auth_bandeiras", JSON.stringify({
+      login: usuario.login,
+      role: usuario.role,
+      nome: usuario.nome
+    }));
     document.getElementById("loginOverlay").style.display = "none";
     carregarSistema();
   } else {
+    erro.textContent = 'Usuário ou senha incorretos.';
     erro.classList.remove("hidden");
   }
 }
 
 function logoutSistema() {
+  if (!confirm('Deseja sair do sistema?')) return;
   localStorage.removeItem("auth_bandeiras");
   location.reload();
 }
@@ -871,14 +1045,37 @@ async function carregarSistema() {
         caixa: [],
         lancamentos: []
       },
-      despesas: []
+      despesas: [],
+      usuarios: []
     };
   }
 
+  // Garante estrutura de usuários
+  if (!db.usuarios) db.usuarios = [];
+
+  // Se não há usuários, cria admin padrão (migração)
+  if (db.usuarios.length === 0) {
+    db.usuarios.push({
+      id: 'usr_admin_1',
+      nome: 'Administrador',
+      login: 'admin',
+      senha: 'bandeiras2026',
+      role: 'admin'
+    });
+    await salvarTudoNoSupabase();
+  }
+
+  // Aplica modo somente leitura
+  if (isReadOnly()) {
+    document.body.classList.add('readonly');
+  } else {
+    document.body.classList.remove('readonly');
+  }
+
+  atualizarSidebarUsuario();
   gerarContasReceber();
   render();
-carregarFiltroAnos();
-
+  carregarFiltroAnos();
 }
 
 
@@ -890,6 +1087,10 @@ window.onload = function () {
   }
 
   document.getElementById("loginOverlay").style.display = "none";
+
+  // Aplica readonly antes de carregar (evita flash)
+  if (isReadOnly()) document.body.classList.add('readonly');
+
   carregarSistema();
 };
 
@@ -1073,7 +1274,7 @@ const contratoBtn = todosArquivos.length
 
         <button
           onclick="event.stopPropagation(); removerArquivoInquilino(${p.id}, '${u.id}', ${index})"
-          class="text-red-500 hover:text-red-700 text-xs"
+          class="text-red-500 hover:text-red-700 text-xs readonly-hidden"
           title="Excluir arquivo">
           🗑️
         </button>
@@ -1098,21 +1299,21 @@ const contratoBtn = todosArquivos.length
 
   <button
     onclick="editarUnidade(${p.id}, '${u.id}')"
-    class="text-slate-500 hover:text-blue-600"
+    class="text-slate-500 hover:text-blue-600 readonly-hidden"
     title="Editar apartamento">
     ✏️
   </button>
 
   <button
     onclick="excluirUnidade(${p.id}, '${u.id}')"
-    class="text-slate-500 hover:text-red-600"
+    class="text-slate-500 hover:text-red-600 readonly-hidden"
     title="Excluir apartamento">
     🗑️
   </button>
 
   <button
     onclick="editInquilino(${p.id}, '${u.id}')"
-    class="text-blue-600 font-black text-xs uppercase hover:underline ml-2">
+    class="text-blue-600 font-black text-xs uppercase hover:underline ml-2 readonly-hidden">
     ALUGAR
   </button>
 
@@ -1126,6 +1327,7 @@ const contratoBtn = todosArquivos.length
     }
 
 function editInquilino(predioId, unidadeId) {
+  if (isReadOnly()) return;
   closeModal('modalDetalhe');
   const p = db.predios.find(x => x.id === predioId);
   const u = p.unidades.find(x => x.id === unidadeId);
@@ -1300,6 +1502,7 @@ document.getElementById('pagamentosTitulo').innerText =
     `;
 
     div.onclick = () => {
+      if (isReadOnly()) return; // bloqueia ação para leitura
       if (pago) {
         reverterPagamento(index);
       } else {
@@ -1325,6 +1528,7 @@ document.getElementById('pagamentosTitulo').innerText =
 
     
 function editarPredio(predioId){
+  if (isReadOnly()) return;
   const p = db.predios.find(x => x.id === predioId);
   const novoNome = prompt("Digite o novo nome do prédio:", p.nome);
   if(!novoNome) return;
@@ -1333,7 +1537,7 @@ function editarPredio(predioId){
 }
 
 function editarUnidade(predioId, unidadeId) {
-
+  if (isReadOnly()) return;
   const predio = db.predios.find(p => p.id === predioId);
   if (!predio) return;
 
@@ -1354,7 +1558,7 @@ function editarUnidade(predioId, unidadeId) {
 }
 
     function excluirUnidade(predioId, unidadeId) {
-
+  if (isReadOnly()) return;
   const predio = db.predios.find(p => p.id === predioId);
   if (!predio) return;
 
@@ -1380,6 +1584,7 @@ function editarUnidade(predioId, unidadeId) {
 
 
 function adicionarUnidade(predioId){
+  if (isReadOnly()) return;
   const p = db.predios.find(x => x.id === predioId);
 
   const nome = prompt("Nome do apartamento (ex: Apto 105):");
@@ -1421,7 +1626,7 @@ if (estaInadimplente(u.inquilino)) {
             return `
             <div class="card relative cursor-pointer hover:shadow-xl transition"
      onclick="viewPredio(${p.id})">
-<div class="absolute top-10 right-3 flex gap-2">
+<div class="absolute top-10 right-3 flex gap-2 readonly-hidden">
   <button
     onclick="event.stopPropagation(); editarPredio(${p.id})"
     class="text-slate-400 hover:text-blue-600 text-sm"
@@ -2131,7 +2336,7 @@ tr.innerHTML = `
   <td class="p-3 text-right font-bold text-red-600">
     R$ ${d.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
   </td>
-  <td class="p-3 text-center whitespace-nowrap">
+  <td class="p-3 text-center whitespace-nowrap readonly-hidden">
     <button
       onclick="editarDespesa(${d.id})"
       class="text-blue-600 hover:text-blue-800 mr-2"
@@ -2153,7 +2358,7 @@ tr.innerHTML = `
 }
 
 function abrirModalDespesa() {
-
+  if (isReadOnly()) return;
   window.despesaEditandoId = null;
 
   document.getElementById('despDescricao').value = '';
@@ -2280,7 +2485,7 @@ function avisarInquilinoAutomatico(inq) {
 }
 
 function removerPredio(predioId) {
-
+  if (isReadOnly()) return;
   const p = db.predios.find(x => x.id === predioId);
   if (!p) return;
 
@@ -2504,7 +2709,7 @@ function abrirHistoricoUnidade(predioId, unidadeNome) {
     R$ ${l.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
   </td>
   <td class="p-2">${l.observacao || '-'}</td>
-<td class="p-2 text-center whitespace-nowrap">
+<td class="p-2 text-center whitespace-nowrap readonly-hidden">
 
   <button
     class="text-blue-600 hover:underline text-sm mr-2"
@@ -2706,6 +2911,7 @@ function importarExcel(input) {
 }
 
 function removerArquivoInquilino(predioId, unidadeId, index) {
+  if (isReadOnly()) return;
   if (!confirm('Deseja remover este arquivo?')) return;
 
   const predio = db.predios.find(p => p.id === predioId);
@@ -2901,6 +3107,7 @@ function abrirConfiguracoes() {
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewConfiguracoes').classList.remove('hidden');
   renderLog();
+  renderTabelaUsuarios();
 }
 
 // ================================
@@ -2946,6 +3153,7 @@ function renderLog() {
 }
 
 function limparLog() {
+  if (isReadOnly()) return;
   if (!confirm('Deseja limpar todo o log do sistema?')) return;
   localStorage.removeItem('bandeiras_log');
   renderLog();
@@ -3013,6 +3221,149 @@ removerPredio = function(predioId) {
   if (p) registrarLog(`Prédio excluído: "${p.nome}"`);
   _removerPredio(predioId);
 };
+
+// ================================
+// GERENCIAMENTO DE USUÁRIOS
+// ================================
+
+function renderTabelaUsuarios() {
+  const tbody = document.getElementById('tabelaUsuarios');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  const usuarioLogado = usuarioAtual();
+  const usuarios = db.usuarios || [];
+
+  if (usuarios.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="p-4 text-center text-slate-400 text-sm">
+          Nenhum usuário cadastrado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  usuarios.forEach(u => {
+    const ehProprio = u.login === usuarioLogado?.login;
+    const roleBadge = u.role === 'admin'
+      ? '<span class="role-badge role-admin">🔑 Admin</span>'
+      : '<span class="role-badge role-readonly">👁️ Leitura</span>';
+
+    const tr = document.createElement('tr');
+    tr.className = 'user-row hover:bg-slate-50';
+    tr.innerHTML = `
+      <td>${u.nome} ${ehProprio ? '<span class="text-xs text-blue-500">(você)</span>' : ''}</td>
+      <td class="font-mono text-xs text-slate-600">${u.login}</td>
+      <td>${roleBadge}</td>
+      <td class="text-center whitespace-nowrap">
+        <button
+          onclick="editarUsuario('${u.id}')"
+          class="text-blue-600 hover:text-blue-800 mr-2 text-sm"
+          title="Editar">✏️</button>
+        <button
+          onclick="excluirUsuario('${u.id}')"
+          ${ehProprio ? 'disabled title="Não pode excluir o próprio usuário"' : 'title="Excluir"'}
+          class="text-red-500 hover:text-red-700 text-sm disabled:opacity-30 disabled:cursor-not-allowed">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function abrirModalNovoUsuario() {
+  window.usuarioEditandoId = null;
+  document.getElementById('modalUsuarioTitulo').textContent = 'Novo Usuário';
+  document.getElementById('usuarioNome').value = '';
+  document.getElementById('usuarioLogin').value = '';
+  document.getElementById('usuarioSenha').value = '';
+  document.getElementById('usuarioPerfil').value = 'readonly';
+  document.getElementById('usuarioEditandoId').value = '';
+  openModal('modalUsuario');
+}
+
+function editarUsuario(id) {
+  const u = (db.usuarios || []).find(x => x.id === id);
+  if (!u) return;
+
+  window.usuarioEditandoId = id;
+  document.getElementById('modalUsuarioTitulo').textContent = 'Editar Usuário';
+  document.getElementById('usuarioNome').value = u.nome;
+  document.getElementById('usuarioLogin').value = u.login;
+  document.getElementById('usuarioSenha').value = '';
+  document.getElementById('usuarioPerfil').value = u.role;
+  document.getElementById('usuarioEditandoId').value = id;
+  openModal('modalUsuario');
+}
+
+function salvarUsuario() {
+  const nome = document.getElementById('usuarioNome').value.trim();
+  const login = document.getElementById('usuarioLogin').value.trim().toLowerCase();
+  const senha = document.getElementById('usuarioSenha').value;
+  const role = document.getElementById('usuarioPerfil').value;
+  const editandoId = document.getElementById('usuarioEditandoId').value;
+
+  if (!nome || !login) {
+    alert('Preencha nome e login.');
+    return;
+  }
+
+  if (!db.usuarios) db.usuarios = [];
+
+  if (editandoId) {
+    const u = db.usuarios.find(x => x.id === editandoId);
+    if (!u) return;
+
+    const loginExiste = db.usuarios.some(x => x.login === login && x.id !== editandoId);
+    if (loginExiste) { alert('Este login já está em uso.'); return; }
+
+    u.nome = nome;
+    u.login = login;
+    u.role = role;
+    if (senha) u.senha = senha;
+
+    registrarLog(`Usuário editado: "${nome}" (${role})`);
+  } else {
+    if (!senha) { alert('Defina uma senha para o novo usuário.'); return; }
+
+    const loginExiste = db.usuarios.some(x => x.login === login);
+    if (loginExiste) { alert('Este login já está em uso.'); return; }
+
+    db.usuarios.push({
+      id: 'usr_' + Date.now(),
+      nome,
+      login,
+      senha,
+      role
+    });
+
+    registrarLog(`Usuário criado: "${nome}" (${role})`);
+  }
+
+  closeModal('modalUsuario');
+  save();
+  renderTabelaUsuarios();
+}
+
+function excluirUsuario(id) {
+  const u = (db.usuarios || []).find(x => x.id === id);
+  if (!u) return;
+
+  const admins = (db.usuarios || []).filter(x => x.role === 'admin');
+  if (u.role === 'admin' && admins.length <= 1) {
+    alert('Não é possível excluir o único administrador do sistema.');
+    return;
+  }
+
+  if (!confirm(`Deseja excluir o usuário "${u.nome}"?`)) return;
+
+  db.usuarios = db.usuarios.filter(x => x.id !== id);
+  registrarLog(`Usuário excluído: "${u.nome}"`);
+  save();
+  renderTabelaUsuarios();
+}
 
 
 </script>
@@ -3115,5 +3466,49 @@ removerPredio = function(predioId) {
 
 
     
+<!-- MODAL GERENCIAR USUÁRIO -->
+<div id="modalUsuario" class="modal">
+  <div class="card w-[95%] max-w-[400px]">
+    <div class="flex justify-between items-center mb-5">
+      <h3 id="modalUsuarioTitulo" class="font-black text-lg uppercase">Novo Usuário</h3>
+      <button class="btn btn-ghost" onclick="closeModal('modalUsuario')">✕</button>
+    </div>
+
+    <input type="hidden" id="usuarioEditandoId">
+
+    <div class="space-y-4">
+
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase">Nome completo</label>
+        <input id="usuarioNome" class="input" placeholder="Ex: João Silva">
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase">Login (usuário)</label>
+        <input id="usuarioLogin" class="input" placeholder="Ex: joao.silva">
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase">Senha</label>
+        <input id="usuarioSenha" type="password" class="input" placeholder="Deixe em branco para não alterar">
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase">Perfil de acesso</label>
+        <select id="usuarioPerfil" class="input">
+          <option value="admin">🔑 Administrador (acesso total)</option>
+          <option value="readonly">👁️ Somente leitura (não pode editar)</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="flex gap-2 mt-6">
+      <button class="btn btn-primary flex-1 justify-center" onclick="salvarUsuario()">✔ Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalUsuario')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
