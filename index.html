@@ -172,6 +172,30 @@ body.readonly .readonly-badge {
   display: inline-block;
 }
 
+/* ── MULTI-SELECT DROPDOWN ── */
+.ms-wrapper { position: relative; display: inline-block; }
+.ms-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+  background: white; font-size: 14px; cursor: pointer; min-width: 150px;
+  color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ms-btn:hover { border-color: #94a3b8; }
+.ms-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 200;
+  background: white; border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12); padding: 8px; min-width: 170px;
+  max-height: 260px; overflow-y: auto;
+}
+.ms-dropdown.open { display: block; }
+.ms-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+  border-radius: 8px; cursor: pointer; font-size: 13px; user-select: none;
+}
+.ms-item:hover { background: #f1f5f9; }
+.ms-item input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: #1e3a8a; }
+.ms-sep { border: none; border-top: 1px solid #e2e8f0; margin: 4px 0; }
+
 /* USER CHIP in sidebar */
 .user-chip {
   background: rgba(255,255,255,.12);
@@ -286,6 +310,12 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
 <div
+  onclick="abrirConsolidado(); fecharMenuMobile()"
+  class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
+  📈 Consolidado
+</div>
+
+<div
   onclick="abrirConfiguracoes(); fecharMenuMobile()"
   class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
   ⚙️ Configurações
@@ -316,25 +346,40 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </h1>
 
 <!-- FILTROS -->
-<div class="flex gap-4 mb-8 flex-wrap">
+<div class="flex gap-4 mb-8 flex-wrap items-start">
 
-  <select id="filtroMes" class="input w-40">
-    <option value="all">Todos os meses</option>
-    <option value="0">Janeiro</option>
-    <option value="1">Fevereiro</option>
-    <option value="2">Março</option>
-    <option value="3">Abril</option>
-    <option value="4">Maio</option>
-    <option value="5">Junho</option>
-    <option value="6">Julho</option>
-    <option value="7">Agosto</option>
-    <option value="8">Setembro</option>
-    <option value="9">Outubro</option>
-    <option value="10">Novembro</option>
-    <option value="11">Dezembro</option>
-  </select>
+  <!-- Multi-select MÊS -->
+  <div class="ms-wrapper" id="wrapperMesFin">
+    <button type="button" class="ms-btn" onclick="msToggle('dropdownMesFin')">
+      <span id="labelMesFin">Todos os meses</span><span style="font-size:10px;opacity:.6;">▾</span>
+    </button>
+    <div id="dropdownMesFin" class="ms-dropdown">
+      <label class="ms-item"><input type="checkbox" id="cbMesFinAll" value="all" onchange="msCheckAll('dropdownMesFin','cbMesFinAll'); aplicarFiltros()"> Todos os meses</label>
+      <hr class="ms-sep">
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="0" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Janeiro</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="1" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Fevereiro</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="2" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Março</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="3" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Abril</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="4" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Maio</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="5" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Junho</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="6" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Julho</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="7" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Agosto</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="8" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Setembro</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="9" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Outubro</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="10" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Novembro</label>
+      <label class="ms-item"><input type="checkbox" class="cb-mes-fin" value="11" onchange="msUncheckAll('cbMesFinAll'); msUpdateLabel('dropdownMesFin','labelMesFin',_nomeMeses); aplicarFiltros()"> Dezembro</label>
+    </div>
+  </div>
 
-<select id="filtroAno" class="input w-32"></select>
+  <!-- Multi-select ANO -->
+  <div class="ms-wrapper" id="wrapperAnoFin">
+    <button type="button" class="ms-btn" onclick="msToggle('dropdownAnoFin')">
+      <span id="labelAnoFin">Ano</span><span style="font-size:10px;opacity:.6;">▾</span>
+    </button>
+    <div id="dropdownAnoFin" class="ms-dropdown" style="min-width:120px;">
+      <!-- populado por carregarFiltroAnos() -->
+    </div>
+  </div>
 
 
   <select id="filtroPredio" class="input w-64">
@@ -398,7 +443,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
   </div>
 
   <div class="card">
-    <p class="text-xs uppercase text-slate-400">Contas Pagas</p>
+    <p class="text-xs uppercase text-slate-400">Despesas</p>
     <p id="finPagar" class="text-2xl font-black text-slate-700">R$ 0,00</p>
   </div>
 
@@ -415,7 +460,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 <div class="card card-full mt-10">
 
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-lg font-black">Contas pagas</h2>
+    <h2 class="text-lg font-black">Despesas</h2>
     <span class="text-xs text-slate-400 uppercase">Detalhamento</span>
   </div>
 
@@ -500,6 +545,87 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 </div>
 
 <!-- VIEW CONFIGURAÇÕES -->
+<!-- ===================== ABA CONSOLIDADO ===================== -->
+<div id="viewConsolidado" class="hidden">
+  <h1 class="text-2xl sm:text-3xl font-black mb-2">📈 CONSOLIDADO HISTÓRICO</h1>
+  <p class="text-slate-500 text-sm mb-6">Receitas anuais por imóvel — dados históricos</p>
+
+  <!-- Filtros Consolidado -->
+  <div class="flex flex-wrap gap-3 mb-6 items-center">
+
+    <!-- Multi-select ANO (Consolidado) -->
+    <div class="ms-wrapper" id="wrapperAnoCons">
+      <button type="button" class="ms-btn" onclick="msToggle('dropdownAnoCons')">
+        <span id="labelAnoCons">2026</span><span style="font-size:10px;opacity:.6;">▾</span>
+      </button>
+      <div id="dropdownAnoCons" class="ms-dropdown" style="min-width:120px;">
+        <!-- populado por inicializarFiltroAnoCons() -->
+      </div>
+    </div>
+
+    <!-- Multi-select MÊS (Consolidado) -->
+    <div class="ms-wrapper" id="wrapperMesCons">
+      <button type="button" class="ms-btn" onclick="msToggle('dropdownMesCons')">
+        <span id="labelMesCons">Todos os meses</span><span style="font-size:10px;opacity:.6;">▾</span>
+      </button>
+      <div id="dropdownMesCons" class="ms-dropdown">
+        <label class="ms-item"><input type="checkbox" id="cbMesConsAll" value="all" checked onchange="msCheckAll('dropdownMesCons','cbMesConsAll'); renderConsolidado()"> Todos os meses</label>
+        <hr class="ms-sep">
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="0" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Janeiro</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="1" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Fevereiro</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="2" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Março</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="3" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Abril</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="4" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Maio</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="5" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Junho</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="6" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Julho</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="7" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Agosto</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="8" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Setembro</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="9" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Outubro</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="10" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Novembro</label>
+        <label class="ms-item"><input type="checkbox" class="cb-mes-cons" value="11" onchange="msUncheckAll('cbMesConsAll'); msUpdateLabel('dropdownMesCons','labelMesCons',_nomeMeses); renderConsolidado()"> Dezembro</label>
+      </div>
+    </div>
+
+    <button onclick="exportarConsolidadoXLSX()"
+      class="btn btn-ghost text-sm border border-slate-200 shadow-sm">
+      ⬇️ Exportar Excel
+    </button>
+  </div>
+
+  <!-- Tabela -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+    <div id="consolidadoLoading" class="p-8 text-center text-slate-400 text-sm">Carregando...</div>
+    <table id="tabelaConsolidado" class="w-full text-sm hidden" style="min-width:900px;">
+      <thead>
+        <tr class="bg-slate-800 text-white">
+          <th class="px-4 py-3 text-left font-bold rounded-tl-2xl">IMÓVEIS</th>
+          <th class="px-3 py-3 text-right font-bold">JAN</th>
+          <th class="px-3 py-3 text-right font-bold">FEV</th>
+          <th class="px-3 py-3 text-right font-bold">MAR</th>
+          <th class="px-3 py-3 text-right font-bold">ABR</th>
+          <th class="px-3 py-3 text-right font-bold">MAI</th>
+          <th class="px-3 py-3 text-right font-bold">JUN</th>
+          <th class="px-3 py-3 text-right font-bold">JUL</th>
+          <th class="px-3 py-3 text-right font-bold">AGO</th>
+          <th class="px-3 py-3 text-right font-bold">SET</th>
+          <th class="px-3 py-3 text-right font-bold">OUT</th>
+          <th class="px-3 py-3 text-right font-bold">NOV</th>
+          <th class="px-3 py-3 text-right font-bold">DEZ</th>
+          <th class="px-3 py-3 text-right font-bold bg-yellow-400 text-slate-900 rounded-tr-2xl">TOTAL ANUAL</th>
+        </tr>
+      </thead>
+      <tbody id="corpoConsolidado" class="divide-y divide-slate-100"></tbody>
+      <tfoot>
+        <tr id="rodapeConsolidado" class="bg-slate-100 font-black text-slate-800"></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Resumo cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6" id="resumoConsolidadoCards"></div>
+</div>
+<!-- =========================================================== -->
+
 <div id="viewConfiguracoes" class="hidden">
 
   <h1 class="text-2xl sm:text-3xl font-black mb-6">⚙️ CONFIGURAÇÕES</h1>
@@ -857,7 +983,105 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
    
 <script>
 
+// ================================
+// MULTI-SELECT HELPERS
+// ================================
+const _nomeMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
+function msToggle(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function msCheckAll(dropdownId, allCbId) {
+  const allCb = document.getElementById(allCbId);
+  const items = document.querySelectorAll(`#${dropdownId} input:not([value="all"])`);
+  items.forEach(cb => { cb.checked = false; });
+  allCb.checked = true;
+  // Update label
+  const labelId = dropdownId.replace('dropdown','label');
+  const labelEl = document.getElementById(labelId);
+  if (labelEl) labelEl.textContent = 'Todos';
+}
+
+function msUncheckAll(allCbId) {
+  const allCb = document.getElementById(allCbId);
+  if (allCb) allCb.checked = false;
+}
+
+function msUpdateLabel(dropdownId, labelId, nomeMap) {
+  const checked = Array.from(document.querySelectorAll(`#${dropdownId} input:not([value="all"]):checked`));
+  const labelEl = document.getElementById(labelId);
+  if (!labelEl) return;
+  if (checked.length === 0) {
+    // nothing checked → revert to "all"
+    const allCb = document.querySelector(`#${dropdownId} input[value="all"]`);
+    if (allCb) allCb.checked = true;
+    labelEl.textContent = 'Todos';
+  } else {
+    labelEl.textContent = checked.map(cb => nomeMap ? nomeMap[Number(cb.value)] : cb.value).join(', ');
+  }
+}
+
+// Returns [] when "all" is selected, or array of string values
+function msGetSelected(dropdownId) {
+  const allCb = document.querySelector(`#${dropdownId} input[value="all"]`);
+  if (allCb && allCb.checked) return [];
+  const checked = Array.from(document.querySelectorAll(`#${dropdownId} input:not([value="all"]):checked`));
+  if (checked.length === 0) return [];   // nada marcado = all
+  return checked.map(cb => cb.value);
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.ms-dropdown.open').forEach(dd => {
+    if (!dd.closest('.ms-wrapper').contains(e.target)) {
+      dd.classList.remove('open');
+    }
+  });
+});
+
+// ================================
+// BACKUP HISTÓRICO → FINANCEIRO
+// ================================
+function getBkpLancamentos() {
+  const result = [];
+  if (typeof _dadosConsolidado === 'undefined') return result;
+  const mesesChave = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  Object.entries(_dadosConsolidado).forEach(([anoStr, linhas]) => {
+    const ano = Number(anoStr);
+    linhas.forEach(linha => {
+      // tenta casar com prédio do db pelo nome
+      const predioMatch = (typeof db !== 'undefined' && db.predios)
+        ? db.predios.find(p =>
+            p.nome.trim().toLowerCase().includes(linha.imovel.trim().toLowerCase()) ||
+            linha.imovel.trim().toLowerCase().includes(p.nome.trim().toLowerCase()))
+        : null;
+      const predioId = predioMatch ? predioMatch.id : null;
+
+      mesesChave.forEach((mesKey, mesIndex) => {
+        const valor = linha[mesKey] || 0;
+        if (valor <= 0) return;
+        result.push({
+          id: `bkp_${ano}_${linha.imovel}_${mesIndex}`,
+          tipo: 'receita',
+          categoria: 'aluguel',
+          valor: valor,
+          data: `${ano}-${String(mesIndex + 1).padStart(2,'0')}-15`,
+          mes: mesIndex,
+          ano: ano,
+          predioId: predioId,
+          predioNome: linha.imovel,
+          unidade: 'Histórico BKP',
+          inquilinoNome: `BKP ${linha.imovel}`,
+          observacao: `Backup histórico: ${linha.imovel}`,
+          _isBkp: true
+        });
+      });
+    });
+  });
+  return result;
+}
 
 const SUPABASE_URL = 'https://fmwmrjawsitbblkxaoxo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtd21yamF3c2l0YmJsa3hhb3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwOTMyMDUsImV4cCI6MjA4MzY2OTIwNX0.QQ4Cwq46o3v8KqLoYTEHDmYyND79PU7V9A4bQbAWZhY';
@@ -1989,123 +2213,77 @@ function reverterPagamento(mesIndex) {
 
 function getFiltrosFinanceiro() {
   return {
-    mes: document.getElementById('filtroMes').value,
-    ano: document.getElementById('filtroAno').value,
+    meses: msGetSelected('dropdownMesFin'),   // [] = todos, ['0','1',...] = específicos
+    anos:  msGetSelected('dropdownAnoFin'),   // [] = todos, ['2026',...] = específicos
     predio: document.getElementById('filtroPredio').value
   };
 }
 
 function calcularFinanceiro(){
 
-const { mes, ano, predio } = getFiltrosFinanceiro();
-const mesFiltro = mes === 'all' ? 'all' : Number(mes);
+  const { meses, anos, predio } = getFiltrosFinanceiro();
+
+  function _passaFiltro(l) {
+    if (meses.length > 0 && !meses.includes(String(l.mes))) return false;
+    if (anos.length  > 0 && !anos.includes(String(l.ano)))  return false;
+    if (predio !== 'all' && l.predioId && String(l.predioId) !== String(predio)) return false;
+    // backup sem predioId só aparece quando "Todos os prédios"
+    if (predio !== 'all' && l._isBkp && !l.predioId) return false;
+    return true;
+  }
 
   let alugueisRecebidos = 0;
-  let jurosRecebidos = 0;
-  let caucaoSaldo = 0;
-  let contasPagar = 0;
-let inadimplencia = 0;
-let contasReceber = 0;
-let lucro = 0;
+  let jurosRecebidos    = 0;
+  let caucaoSaldo       = 0;
+  let contasPagar       = 0;
+  let inadimplencia     = 0;
+  let contasReceber     = 0;
 
-
-inadimplencia = 0;
-
-db.predios.forEach(predio => {
-  predio.unidades.forEach(u => {
-    if (u.status === 'ocupado' && u.inquilino) {
-
-      const mesAtual = HOJE.getMonth();
-      const diaVenc = parseInt(u.inquilino.venc);
-
-const pagamentoMes = u.inquilino.pagamentos[mesAtual];
-const pago = pagamentoMes && pagamentoMes.pago === true;
-const venceu = HOJE.getDate() > diaVenc;
-
-if (estaInadimplente(u.inquilino)) {
-  inadimplencia += Number(u.inquilino.valor || 0);
-}
-
-
-    }
+  // Inadimplência sempre reflete situação atual (sem filtro de data)
+  db.predios.forEach(p => {
+    p.unidades.forEach(u => {
+      if (u.status === 'ocupado' && u.inquilino && estaInadimplente(u.inquilino)) {
+        inadimplencia += Number(u.inquilino.valor || 0);
+      }
+    });
   });
-});
 
+  if (!db.financeiro.lancamentos) db.financeiro.lancamentos = [];
 
-  if (!db.financeiro.lancamentos) {
-    db.financeiro.lancamentos = [];
-  }
+  // Lançamentos do sistema + backup histórico
+  const todosLancamentos = [
+    ...db.financeiro.lancamentos,
+    ...getBkpLancamentos()
+  ];
 
-  db.financeiro.lancamentos.forEach(l => {
-
-    if (mes !== 'all' && l.mes != mes) return;
-if (ano && l.ano != ano) return;
-if (predio !== 'all' && l.predioId && l.predioId != predio) return;
-
+  todosLancamentos.forEach(l => {
+    if (!_passaFiltro(l)) return;
 
     if (l.tipo === 'receita') {
-
-      if (l.categoria === 'aluguel') {
-        alugueisRecebidos += l.valor;
-      }
-
-      if (l.categoria === 'juros') {
-        jurosRecebidos += l.valor;
-      }
-if (l.categoria === 'caucao') {
-  caucaoSaldo += l.valor;
-}
-
+      if (l.categoria === 'aluguel') alugueisRecebidos += l.valor;
+      if (l.categoria === 'juros')   jurosRecebidos    += l.valor;
+      if (l.categoria === 'caucao')  caucaoSaldo       += l.valor;
     }
-
-    if (l.tipo === 'despesa') {
-      contasPagar += l.valor;
-    }
+    if (l.tipo === 'despesa') contasPagar += l.valor;
   });
 
-db.financeiro.contasReceber.forEach(c => {
-
-  if (mes !== 'all' && c.mes != mes) return;
-  if (ano && c.ano != ano) return;
-  if (predio !== 'all' && c.predioId != predio) return;
-
-  if (c.status === 'aberto') {
-    contasReceber += c.valor;
-  }
-});
-
-
-  document.getElementById('finAluguelRecebido').innerText =
-    'R$ ' + alugueisRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-  document.getElementById('finJuros').innerText =
-    'R$ ' + jurosRecebidos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-document.getElementById('finCaucao').innerText =
-  'R$ ' + caucaoSaldo.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2
+  db.financeiro.contasReceber.forEach(c => {
+    if (meses.length > 0 && !meses.includes(String(c.mes))) return;
+    if (anos.length  > 0 && !anos.includes(String(c.ano)))  return;
+    if (predio !== 'all' && String(c.predioId) !== String(predio)) return;
+    if (c.status === 'aberto') contasReceber += c.valor;
   });
 
+  const lucro = alugueisRecebidos + jurosRecebidos - contasPagar;
 
-document.getElementById('finPagar').innerText =
-  'R$ ' + contasPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-document.getElementById('finInadimplencia').innerText =
-  'R$ ' + inadimplencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-document.getElementById('finReceber').innerText =
-  'R$ ' + contasReceber.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2
-  });
-
-lucro = alugueisRecebidos + jurosRecebidos - contasPagar;
-
-document.getElementById('finLucro').innerText =
-  'R$ ' + lucro.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2
-  });
-
-
+  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  document.getElementById('finAluguelRecebido').innerText = fmt(alugueisRecebidos);
+  document.getElementById('finJuros').innerText           = fmt(jurosRecebidos);
+  document.getElementById('finCaucao').innerText          = fmt(caucaoSaldo);
+  document.getElementById('finPagar').innerText           = fmt(contasPagar);
+  document.getElementById('finInadimplencia').innerText   = fmt(inadimplencia);
+  document.getElementById('finReceber').innerText         = fmt(contasReceber);
+  document.getElementById('finLucro').innerText           = fmt(lucro);
 }
 
 function carregarPrediosDespesa() {
@@ -2139,17 +2317,21 @@ function abrirFinanceiro() {
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewConfiguracoes').classList.add('hidden');
+  document.getElementById('viewConsolidado').classList.add('hidden');
   document.getElementById('viewFinanceiro').classList.remove('hidden');
 
-  const agora = new Date();
-
-document.getElementById('filtroMes').value = new Date().getMonth().toString();
-  document.getElementById('filtroAno').value = agora.getFullYear().toString();
+  // Seleciona o mês atual por padrão no multi-select de meses
+  const mesAtual = new Date().getMonth();
+  document.querySelectorAll('.cb-mes-fin').forEach(cb => { cb.checked = false; });
+  const cbMesAtual = document.querySelector(`#dropdownMesFin input[value="${mesAtual}"]`);
+  if (cbMesAtual) {
+    cbMesAtual.checked = true;
+    document.getElementById('cbMesFinAll').checked = false;
+    document.getElementById('labelMesFin').textContent = _nomeMeses[mesAtual];
+  }
 
   carregarFiltroPredios();
-  carregarFiltroAnos();
-
-  document.getElementById('filtroAno').value = agora.getFullYear().toString();
+  carregarFiltroAnos();   // popula anos e marca o atual
   calcularFinanceiro();
   renderDespesas();
 }
@@ -2158,6 +2340,7 @@ function voltarParaPortfolio(){
   document.getElementById('viewFinanceiro').classList.add('hidden');
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
   document.getElementById('viewConfiguracoes').classList.add('hidden');
+  document.getElementById('viewConsolidado').classList.add('hidden');
 }
 
 
@@ -2225,6 +2408,7 @@ function adicionarDespesa({
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewFinanceiro').classList.add('hidden');
   document.getElementById('viewConfiguracoes').classList.add('hidden');
+  document.getElementById('viewConsolidado').classList.add('hidden');
   document.getElementById('viewRelatorioClientes').classList.remove('hidden');
 
   document.getElementById('buscaCliente').value = '';
@@ -2299,7 +2483,7 @@ const valor = moedaParaNumero(
 
 
 function renderDespesas(){
-const { mes, ano, predio } = getFiltrosFinanceiro();
+  const { meses, anos, predio } = getFiltrosFinanceiro();
 
   const tbody = document.getElementById('listaDespesas');
   if(!tbody) return;
@@ -2309,15 +2493,12 @@ const { mes, ano, predio } = getFiltrosFinanceiro();
   if (!db.financeiro.lancamentos) return;
 
   const despesas = db.financeiro.lancamentos.filter(l => {
-
-  if (l.tipo !== 'despesa') return false;
-
-  if (mes !== 'all' && l.mes != mes) return false;
-  if (ano && l.ano != ano) return false;
-  if (predio !== 'all' && l.predioId != predio) return false;
-
-  return true;
-});
+    if (l.tipo !== 'despesa') return false;
+    if (meses.length > 0 && !meses.includes(String(l.mes))) return false;
+    if (anos.length  > 0 && !anos.includes(String(l.ano)))  return false;
+    if (predio !== 'all' && l.predioId != predio) return false;
+    return true;
+  });
 
 
   despesas.forEach(d => {
@@ -2973,42 +3154,57 @@ function migrarContratosAntigos() {
 }
 
 function carregarFiltroAnos() {
-  const select = document.getElementById('filtroAno');
-  if (!select) return;
-
-  select.innerHTML = '';
+  const dropdown = document.getElementById('dropdownAnoFin');
+  if (!dropdown) return;
 
   const anos = new Set();
 
+  // Anos dos lançamentos do sistema
   if (db.financeiro?.lancamentos) {
-    db.financeiro.lancamentos.forEach(l => {
-      if (l.ano) anos.add(l.ano);
-    });
+    db.financeiro.lancamentos.forEach(l => { if (l.ano) anos.add(l.ano); });
+  }
+  // Anos do backup histórico
+  if (typeof _dadosConsolidado !== 'undefined') {
+    Object.keys(_dadosConsolidado).forEach(a => anos.add(Number(a)));
   }
 
   const anoAtual = new Date().getFullYear();
   anos.add(anoAtual);
 
-  [...anos].sort((a, b) => a - b).forEach(ano => {
-    const opt = document.createElement('option');
-    opt.value = ano;
-    opt.innerText = ano;
-    select.appendChild(opt);
-  });
+  const anosOrdenados = [...anos].sort((a, b) => a - b);
 
-  select.value = anoAtual.toString();
+  dropdown.innerHTML = `
+    <label class="ms-item">
+      <input type="checkbox" id="cbAnoFinAll" value="all"
+        onchange="msCheckAll('dropdownAnoFin','cbAnoFinAll'); aplicarFiltros()">
+      Todos os anos
+    </label>
+    <hr class="ms-sep">
+  ` + anosOrdenados.map(ano => `
+    <label class="ms-item">
+      <input type="checkbox" class="cb-ano-fin" value="${ano}"
+        onchange="msUncheckAll('cbAnoFinAll'); msUpdateLabel('dropdownAnoFin','labelAnoFin',null); aplicarFiltros()">
+      ${ano}
+    </label>
+  `).join('');
+
+  // Marca o ano atual por padrão
+  const cbAtual = dropdown.querySelector(`input[value="${anoAtual}"]`);
+  if (cbAtual) {
+    cbAtual.checked = true;
+    document.getElementById('labelAnoFin').textContent = String(anoAtual);
+  }
 }
 
 
-['filtroMes', 'filtroAno', 'filtroPredio'].forEach(id => {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  el.addEventListener('change', () => {
+// Filtro de prédio no Financeiro (o único select simples restante)
+const _elFiltroPredio = document.getElementById('filtroPredio');
+if (_elFiltroPredio) {
+  _elFiltroPredio.addEventListener('change', () => {
     calcularFinanceiro();
     renderDespesas();
   });
-});
+}
 
 function excluirLancamentoRelatorio(index, nomeCliente) {
 
@@ -3105,9 +3301,312 @@ function abrirConfiguracoes() {
   document.getElementById('viewPortfolio').style.display = 'none';
   document.getElementById('viewFinanceiro').classList.add('hidden');
   document.getElementById('viewRelatorioClientes').classList.add('hidden');
+  document.getElementById('viewConsolidado').classList.add('hidden');
   document.getElementById('viewConfiguracoes').classList.remove('hidden');
   renderLog();
   renderTabelaUsuarios();
+}
+
+// ================================
+// CONSOLIDADO HISTÓRICO
+// ================================
+
+function _fecharTodasViews() {
+  document.getElementById('viewPortfolio').style.display = 'none';
+  document.getElementById('viewFinanceiro').classList.add('hidden');
+  document.getElementById('viewRelatorioClientes').classList.add('hidden');
+  document.getElementById('viewConfiguracoes').classList.add('hidden');
+  document.getElementById('viewConsolidado').classList.add('hidden');
+}
+
+async function abrirConsolidado() {
+  _fecharTodasViews();
+  document.getElementById('viewConsolidado').classList.remove('hidden');
+  inicializarFiltroAnoCons();
+  await renderConsolidado();
+}
+
+const _dadosConsolidado = {
+  2023: [
+    { imovel:'Pedra Branca',          jan:8287.36, fev:7590.83, mar:11645.83, abr:9645.45, mai:8910.00, jun:9063.50, jul:8935.68, ago:9031.39, set:10430.59, out:9731.09, nov:9571.29, dez:9707.49, total:112550.50 },
+    { imovel:'Benfica',               jan:4550.00, fev:3918.49, mar:3180.00,  abr:3225.73, mai:4618.73, jun:3880.00, jul:4895.00, ago:4895.00, set:3895.00,  out:3956.99, nov:3574.66, dez:3535.83, total:44725.43 },
+    { imovel:'Casa Primavera',        jan:0,       fev:0,       mar:0,        abr:0,       mai:0,       jun:1000.00, jul:1000.00, ago:1000.00, set:1000.00,  out:1000.00, nov:1000.00, dez:1000.00, total:7000.00 }
+  ],
+  2024: [
+    { imovel:'Pedra Branca',          jan:8874.99, fev:7685.80, mar:7686.50, abr:9866.50, mai:7655.00, jun:8755.00, jul:8875.86, ago:9037.57, set:8963.18, out:8937.38, nov:8934.12, dez:8956.80, total:104228.70 },
+    { imovel:'Benfica',               jan:3934.66, fev:3895.00, mar:3895.83, abr:3895.00, mai:3965.00, jun:3195.00, jul:4615.00, ago:3954.16, set:3550.44, out:3543.63, nov:3566.25, dez:3598.58, total:45648.55 },
+    { imovel:'Casa Primavera',        jan:1000.00, fev:1000.00, mar:1000.00, abr:1000.00, mai:1000.00, jun:1000.00, jul:1000.00, ago:1000.00, set:1000.00, out:1000.00, nov:1000.00, dez:1000.00, total:12000.00 },
+    { imovel:'Alto Alegre',           jan:0,       fev:2000.00, mar:5600.00, abr:4000.00, mai:6200.00, jun:5300.00, jul:5000.00, ago:4981.98, set:3932.00, out:5200.00, nov:6200.00, dez:6300.00, total:54713.98 }
+  ],
+  2025: [
+    { imovel:'Pedra Branca',          jan:9821.41,  fev:8921.41, mar:8945.86, abr:10089.67, mai:10088.60, jun:10116.16, jul:9275.26, ago:9421.63, set:9381.60,  out:11904.50, nov:7507.00,  dez:10505.00, total:115978.10 },
+    { imovel:'Benfica',               jan:3546.72,  fev:3611.92, mar:3599.40, abr:2050.00,  mai:3725.00,  jun:2925.00,  jul:2925.00, ago:2650.00, set:3450.00,  out:3425.00,  nov:3925.00,  dez:2650.00,  total:38483.04 },
+    { imovel:'Casa Ildefonso Albano', jan:1300.00,  fev:1300.00, mar:1300.00, abr:1300.00,  mai:1300.00,  jun:1300.00,  jul:1300.00, ago:1300.00, set:1300.00,  out:1300.00,  nov:1300.00,  dez:1300.00,  total:15600.00 },
+    { imovel:'Casa Primavera',        jan:1000.00,  fev:1000.00, mar:1000.00, abr:1000.00,  mai:1000.00,  jun:1000.00,  jul:1000.00, ago:1000.00, set:1000.00,  out:1000.00,  nov:1000.00,  dez:1000.00,  total:12000.00 },
+    { imovel:'Alto Alegre',           jan:5300.00,  fev:6400.00, mar:5300.00, abr:5300.00,  mai:5300.00,  jun:6437.99,  jul:5200.00, ago:6400.00, set:5344.00,  out:7300.00,  nov:6400.00,  dez:6300.00,  total:70981.99 },
+    { imovel:'Campo Belo SP',         jan:0,        fev:0,       mar:0,       abr:0,        mai:0,        jun:0,        jul:0,       ago:1532.11, set:1064.99,  out:1947.94,  nov:2457.05,  dez:1943.16,  total:8945.25 }
+  ]
+};
+
+const _mesesConsolidado = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const _brlCons = v => v === 0 ? 'R$ 0,00' : v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+
+function inicializarFiltroAnoCons() {
+  const dropdown = document.getElementById('dropdownAnoCons');
+  if (!dropdown) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [...new Set([...Object.keys(_dadosConsolidado).map(Number), anoAtual])].sort((a,b) => b - a);
+
+  // Monta via DOM para evitar conflito de aspas
+  dropdown.innerHTML = '';
+
+  const lblAll = document.createElement('label');
+  lblAll.className = 'ms-item';
+  const cbAll = document.createElement('input');
+  cbAll.type = 'checkbox'; cbAll.id = 'cbAnoConsAll'; cbAll.value = 'all';
+  cbAll.onchange = () => { msCheckAll('dropdownAnoCons','cbAnoConsAll'); renderConsolidado(); };
+  lblAll.appendChild(cbAll);
+  lblAll.appendChild(document.createTextNode(' Todos os anos'));
+  dropdown.appendChild(lblAll);
+
+  const hr = document.createElement('hr');
+  hr.className = 'ms-sep';
+  dropdown.appendChild(hr);
+
+  anos.forEach(a => {
+    const lbl = document.createElement('label');
+    lbl.className = 'ms-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'cb-ano-cons'; cb.value = String(a);
+    if (a === anoAtual) cb.checked = true;
+    cb.onchange = () => { msUncheckAll('cbAnoConsAll'); msUpdateLabel('dropdownAnoCons','labelAnoCons',null); renderConsolidado(); };
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + a));
+    dropdown.appendChild(lbl);
+  });
+
+  document.getElementById('labelAnoCons').textContent = String(anoAtual);
+}
+
+// Monta linhas do Consolidado a partir dos lançamentos financeiros (para anos >= 2026)
+// Lucro = aluguel + juros - despesas  (mesmo critério da aba Financeiro, SEM cauções)
+function buildLinhasFinanceiroCons(ano) {
+  const mesesChave = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const lancamentos = (db.financeiro?.lancamentos || []).filter(l => Number(l.ano) === ano);
+  if (lancamentos.length === 0) return [];
+
+  const byPredi = {};
+  lancamentos.forEach(l => {
+    // Resolve nome do prédio — ignora se não conseguir identificar
+    const nome = l.predioNome
+      || (db.predios?.find(p => String(p.id) === String(l.predioId))?.nome)
+      || null;
+    if (!nome) return; // pula lançamentos sem prédio identificado
+
+    if (!byPredi[nome]) {
+      byPredi[nome] = { imovel: nome, jan:0, fev:0, mar:0, abr:0, mai:0, jun:0, jul:0, ago:0, set:0, out:0, nov:0, dez:0, total:0 };
+    }
+    const mesIdx = Number(l.mes); // 0-indexed
+    const mesKey = mesesChave[mesIdx];
+    if (!mesKey) return;
+
+    // Lucro = aluguel + juros - despesas (caucao excluído)
+    if (l.tipo === 'receita' && (l.categoria === 'aluguel' || l.categoria === 'juros')) {
+      byPredi[nome][mesKey] += (l.valor || 0);
+    }
+    if (l.tipo === 'despesa') {
+      byPredi[nome][mesKey] -= (l.valor || 0);
+    }
+  });
+
+  return Object.values(byPredi).map(r => {
+    r.total = mesesChave.reduce((s, k) => s + (r[k] || 0), 0);
+    return r;
+  }).sort((a,b) => a.imovel.localeCompare(b.imovel));
+}
+
+async function renderConsolidado() {
+  const anosSelec = msGetSelected('dropdownAnoCons');  // [] = todos
+  const mesesSelec = msGetSelected('dropdownMesCons'); // [] = todos
+
+  const loading = document.getElementById('consolidadoLoading');
+  const tabela  = document.getElementById('tabelaConsolidado');
+  const corpo   = document.getElementById('corpoConsolidado');
+  const rodape  = document.getElementById('rodapeConsolidado');
+  const cards   = document.getElementById('resumoConsolidadoCards');
+
+  loading.classList.remove('hidden');
+  tabela.classList.add('hidden');
+
+  // Determina quais anos renderizar (inclui ano atual dinamicamente)
+  const _anoAtualCons = new Date().getFullYear();
+  const todosAnos = [...new Set([...Object.keys(_dadosConsolidado).map(Number), _anoAtualCons])].sort((a,b)=>a-b);
+  const anosParaRender = anosSelec.length > 0
+    ? anosSelec.map(Number).sort((a,b)=>a-b)
+    : todosAnos;
+
+  // Determina colunas de meses a exibir
+  const mesesChave = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const mesesLabel = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const nomeMesCompleto = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const colsMeses = mesesSelec.length > 0
+    ? mesesSelec.map(Number)
+    : mesesChave.map((_,i) => i);
+
+  // Atualiza cabeçalho da tabela conforme meses selecionados
+  const thead = tabela.querySelector('thead tr');
+  thead.innerHTML = `
+    <th class="px-4 py-3 text-left font-bold rounded-tl-2xl">IMÓVEIS</th>
+    ${colsMeses.map(i => `<th class="px-3 py-3 text-right font-bold">${mesesLabel[i]}</th>`).join('')}
+    <th class="px-3 py-3 text-right font-bold bg-yellow-400 text-slate-900 rounded-tr-2xl">TOTAL</th>
+  `;
+
+  // ── Coleta e FUNDE dados de todos os anos selecionados por imóvel ──
+  // Usa chave normalizada (trim + lowercase) para garantir merge mesmo com diferenças de espaço/capitalização
+  const _PRIMEIRO_ANO_FINANCEIRO = 2026;
+  const merged = {};       // { chaveNormalizada: { imovel, jan, fev, ... } }
+  const _normKey = n => n.trim().toLowerCase().replace(/\s+/g,' ');
+
+  for (const ano of anosParaRender) {
+    let linhas = null;
+    if (ano >= _PRIMEIRO_ANO_FINANCEIRO) {
+      linhas = buildLinhasFinanceiroCons(ano);
+    } else {
+      try {
+        const { data, error } = await supabaseClient
+          .from('consolidado_historico')
+          .select('*')
+          .eq('ano', ano)
+          .order('imovel');
+        if (!error && data && data.length > 0) {
+          linhas = data.map(r => ({
+            imovel: r.imovel,
+            jan:r.jan,fev:r.fev,mar:r.mar,abr:r.abr,
+            mai:r.mai,jun:r.jun,jul:r.jul,ago:r.ago,
+            set:r.set_,out:r.out_,nov:r.nov,dez:r.dez
+          }));
+        }
+      } catch(e) {}
+      if (!linhas) linhas = _dadosConsolidado[ano] || [];
+    }
+
+    linhas.forEach(l => {
+      const key = _normKey(l.imovel);
+      if (!merged[key]) {
+        // Guarda o nome de exibição do primeiro ano encontrado (dados históricos vêm primeiro)
+        merged[key] = { imovel: l.imovel.trim(), jan:0, fev:0, mar:0, abr:0, mai:0, jun:0, jul:0, ago:0, set:0, out:0, nov:0, dez:0 };
+      }
+      mesesChave.forEach(k => { merged[key][k] += (l[k] || 0); });
+    });
+  }
+
+  // Ordena imóveis por nome
+  const linhasFundidas = Object.values(merged).sort((a,b) => a.imovel.localeCompare(b.imovel));
+
+  // Totais por coluna
+  const totCols = {};
+  colsMeses.forEach(i => totCols[i] = 0);
+  let totGeralGeral = 0;
+  const imoveisSet = new Set();
+
+  linhasFundidas.forEach(l => {
+    colsMeses.forEach(i => { totCols[i] += (l[mesesChave[i]] || 0); });
+    totGeralGeral += colsMeses.reduce((s,i) => s + (l[mesesChave[i]] || 0), 0);
+    imoveisSet.add(l.imovel);
+  });
+
+  // ── Renderiza linhas fundidas ──
+  const htmlCorpo = linhasFundidas.map((l, i) => {
+    const totLinha = colsMeses.reduce((s,idx) => s + (l[mesesChave[idx]] || 0), 0);
+    return `
+      <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-blue-50 transition">
+        <td class="px-4 py-2 font-semibold text-slate-800">${l.imovel}</td>
+        ${colsMeses.map(idx => `<td class="px-3 py-2 text-right text-slate-600 text-xs">${_brlCons(l[mesesChave[idx]]||0)}</td>`).join('')}
+        <td class="px-3 py-2 text-right font-black text-slate-900 bg-yellow-50">${_brlCons(totLinha)}</td>
+      </tr>`;
+  }).join('');
+
+  // ── Rodapé único ──
+  const labelRod = anosParaRender.length > 1
+    ? `TOTAL ${anosParaRender.join(' + ')}`
+    : `TOTAL ${anosParaRender[0]}`;
+  const htmlRodape = `
+    <tr class="bg-slate-900 text-white font-black">
+      <td class="px-4 py-3">${labelRod}</td>
+      ${colsMeses.map(i => `<td class="px-3 py-3 text-right text-xs">${_brlCons(totCols[i])}</td>`).join('')}
+      <td class="px-3 py-3 text-right text-yellow-300">${_brlCons(totGeralGeral)}</td>
+    </tr>`;
+
+  corpo.innerHTML = htmlCorpo;
+  rodape.innerHTML = htmlRodape;
+
+  // Cards resumo
+  const nMeses = colsMeses.length || 12;
+  const labelAnos = anosParaRender.length > 1
+    ? anosParaRender.join(' + ')
+    : anosParaRender[0];
+  cards.innerHTML = `
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+      <p class="text-xs text-slate-400 font-bold uppercase mb-1">Total ${labelAnos}</p>
+      <p class="text-xl font-black text-blue-900">${_brlCons(totGeralGeral)}</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+      <p class="text-xs text-slate-400 font-bold uppercase mb-1">Imóveis</p>
+      <p class="text-xl font-black text-slate-800">${imoveisSet.size}</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+      <p class="text-xs text-slate-400 font-bold uppercase mb-1">Média Mensal</p>
+      <p class="text-xl font-black text-green-700">${_brlCons(totGeralGeral / (nMeses * anosParaRender.length))}</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+      <p class="text-xs text-slate-400 font-bold uppercase mb-1">Anos exibidos</p>
+      <p class="text-xl font-black text-emerald-600">${anosParaRender.length}</p>
+    </div>`;
+
+  loading.classList.add('hidden');
+  tabela.classList.remove('hidden');
+}
+
+function exportarConsolidadoXLSX() {
+  const anosSelec  = msGetSelected('dropdownAnoCons');
+  const mesesSelec = msGetSelected('dropdownMesCons');
+  const mesesChave = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const mesesLabel = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+  const _anoAtualExp = new Date().getFullYear();
+  const todosAnos = [...new Set([...Object.keys(_dadosConsolidado).map(Number), _anoAtualExp])].sort((a,b)=>a-b);
+  const anosRender = anosSelec.length > 0 ? anosSelec.map(Number) : todosAnos;
+  const colsIdx    = mesesSelec.length > 0 ? mesesSelec.map(Number) : mesesChave.map((_,i)=>i);
+
+  const wb = XLSX.utils.book_new();
+
+  // Funde todos os anos selecionados em um único relatório por imóvel (chave normalizada)
+  const _normKeyExp = n => n.trim().toLowerCase().replace(/\s+/g,' ');
+  const mergedExp = {};
+  anosRender.forEach(ano => {
+    const linhas = ano >= 2026
+      ? buildLinhasFinanceiroCons(ano)
+      : (_dadosConsolidado[ano] || []);
+    linhas.forEach(l => {
+      const key = _normKeyExp(l.imovel);
+      if (!mergedExp[key]) {
+        mergedExp[key] = { imovel: l.imovel.trim(), jan:0,fev:0,mar:0,abr:0,mai:0,jun:0,jul:0,ago:0,set:0,out:0,nov:0,dez:0 };
+      }
+      mesesChave.forEach(k => { mergedExp[key][k] += (l[k] || 0); });
+    });
+  });
+
+  const linhasExp = Object.values(mergedExp).sort((a,b) => a.imovel.localeCompare(b.imovel));
+  const header = ['IMÓVEIS', ...colsIdx.map(i=>mesesLabel[i]), 'TOTAL'];
+  const rows = linhasExp.map(l => {
+    const tot = colsIdx.reduce((s,i) => s+(l[mesesChave[i]]||0), 0);
+    return [l.imovel, ...colsIdx.map(i => l[mesesChave[i]]||0), tot];
+  });
+  const sheetName = anosRender.length > 1 ? anosRender.join('+') : String(anosRender[0]);
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  XLSX.utils.book_append_sheet(wb, ws, `Consolidado ${sheetName}`);
+
+  XLSX.writeFile(wb, `Consolidado_${sheetName}.xlsx`);
 }
 
 // ================================
