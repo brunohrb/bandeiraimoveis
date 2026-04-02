@@ -297,7 +297,7 @@ body.readonly .readonly-badge {
 <div
 onclick="voltarParaPortfolio(); fecharMenuMobile()"
   class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
-  <i class="fas fa-home"></i> Portfólio 2026
+  <i class="fas fa-home"></i> Portfólio
 </div>
 <div onclick="abrirFinanceiro(); fecharMenuMobile()"
      class="p-3 bg-slate-700 rounded-xl cursor-pointer flex items-center gap-3 hover:bg-blue-600 transition-all duration-300">
@@ -877,7 +877,7 @@ onclick="voltarParaPortfolio(); fecharMenuMobile()"
 <div id="modalPagamentos" class="modal">
 <div class="card w-[95%] max-w-[450px]">
         <div class="flex justify-between items-center mb-6">
-            <h3 id="pagamentosTitulo" class="font-black text-xl uppercase">Histórico 2026</h3>
+            <h3 id="pagamentosTitulo" class="font-black text-xl uppercase">Histórico</h3>
             <button class="btn btn-ghost" onclick="closeModalPagamentos()"><i class="fas fa-times"></i> FECHAR</button>
         </div>
 
@@ -1265,6 +1265,18 @@ async function carregarSistema() {
     };
   }
 
+  // Migração multi-ano: garante anoEntrada em todos os inquilinos e estende o array
+  db.predios.forEach(p => {
+    (p.unidades || []).forEach(u => {
+      if (u.inquilino && u.inquilino.pagamentos) {
+        if (!u.inquilino.anoEntrada) {
+          u.inquilino.anoEntrada = 2026; // todos os inquilinos atuais começaram em 2026
+        }
+        extenderPagamentos(u.inquilino);
+      }
+    });
+  });
+
   // Garante estrutura de usuários
   if (!db.usuarios) db.usuarios = [];
 
@@ -1343,24 +1355,60 @@ db.predios.forEach(predio => {
     let currentViewingPredioId = null; 
     const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     const HOJE = new Date();
- 
+
+// ── Helpers multi-ano ───────────────────────────────────────────────────────
+
+// Ano real correspondente ao índice i do array pagamentos
+// índice 0 = Jan do anoEntrada, índice 12 = Jan do (anoEntrada+1), etc.
+function getAnoDoIndex(inq, i) {
+  const anoBase = inq.anoEntrada || 2026;
+  return anoBase + Math.floor(i / 12);
+}
+
+// Rótulo de exibição: "Jan" quando é o mesmo ano base, "Jan '27" quando muda de ano
+function getMesAnoLabel(inq, i) {
+  const anoBase = inq.anoEntrada || 2026;
+  const anoDoIndex = getAnoDoIndex(inq, i);
+  const mesNome = MESES[i % 12];
+  if (anoDoIndex === anoBase) return mesNome;
+  return `${mesNome} '${String(anoDoIndex).slice(-2)}`;
+}
+
+// Índice do array correspondente ao mês/ano de hoje
+function getMesAtualIndex(inq) {
+  const anoBase = inq.anoEntrada || 2026;
+  return (HOJE.getFullYear() - anoBase) * 12 + HOJE.getMonth();
+}
+
+// Garante que o array de pagamentos tem entradas até o mês atual + 2 meses de folga
+function extenderPagamentos(inq) {
+  if (!inq || !inq.pagamentos) return;
+  const targetLength = getMesAtualIndex(inq) + 3;
+  while (inq.pagamentos.length < targetLength) {
+    inq.pagamentos.push({ pago: false });
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 function estaInadimplente(inquilino) {
   if (!inquilino || !inquilino.pagamentos) return false;
 
-  const mesAtual = HOJE.getMonth();
+  const mesAtualIdx = getMesAtualIndex(inquilino);
   const diaHoje = HOJE.getDate();
   const diaVenc = parseInt(inquilino.venc);
 
-  for (let mes = 0; mes < mesAtual; mes++) {
+  // Verifica todos os meses anteriores ao atual
+  for (let mes = 0; mes < mesAtualIdx; mes++) {
     const pag = inquilino.pagamentos[mes];
     if (pag && pag.naoAplica === true) continue; // mês antes da entrada — ignorar
     const pago = pag === true || (pag && pag.pago === true);
     if (!pago) return true;
   }
 
-  const pagAtual = inquilino.pagamentos[mesAtual];
+  // Verifica o mês atual
+  const pagAtual = inquilino.pagamentos[mesAtualIdx];
   // Proporcional do mês de entrada: não conta como inadimplência automática
-  // (é cobrado no ato da assinatura do contrato)
   if (pagAtual && pagAtual.proporcional === true && !pagAtual.pago) {
     return false;
   }
@@ -1483,10 +1531,7 @@ function closeModal(id) {
         lista.innerHTML = p.unidades.map(u => {
             let isLate = false;
             if (u.inquilino && u.inquilino.pagamentos) {
-                const mesAtual = HOJE.getMonth();
-                const diaVenc = parseInt(u.inquilino.venc);
-isLate = estaInadimplente(u.inquilino);
-
+                isLate = estaInadimplente(u.inquilino);
             }
 
 const statusTag =
@@ -1497,19 +1542,11 @@ const statusTag =
 let financeiroTag = '<span class="text-slate-300">—</span>';
 
 if (u.status === 'ocupado' && u.inquilino && u.inquilino.pagamentos) {
-  const mesAtual = HOJE.getMonth();
-  const diaVenc = parseInt(u.inquilino.venc);
-
-  const pagamentoMes = u.inquilino.pagamentos[mesAtual];
-
-if (estaInadimplente(u.inquilino)) {
-  financeiroTag = '<span class="tag tag-late">Inadimplente</span>';
-} else {
-  financeiroTag = '<span class="tag tag-free">Em dia</span>';
-}
-
-
-
+  if (estaInadimplente(u.inquilino)) {
+    financeiroTag = '<span class="tag tag-late">Inadimplente</span>';
+  } else {
+    financeiroTag = '<span class="tag tag-free">Em dia</span>';
+  }
 }
 
             
@@ -1701,6 +1738,7 @@ function editInquilino(predioId, unidadeId) {
     dataEntrada: u.inquilino?.dataEntrada || new Date().toISOString().split('T')[0],
     dataSaida: null,
     arquivos: todosArquivos,
+    anoEntrada: u.inquilino?.anoEntrada || new Date().getFullYear(),
     pagamentos: pagamentos
   };
 
@@ -1801,8 +1839,11 @@ document.getElementById('pagamentosTitulo').innerText =
   const grid = document.getElementById('gridPagamentos');
   grid.innerHTML = '';
 
+  // Garante que o array cobre o mês atual + folga
+  extenderPagamentos(inq);
+
   inq.pagamentos.forEach((pag, index) => {
-    const mesNome = MESES[index];
+    const mesNome = getMesAnoLabel(inq, index); // ex: "Jan", "Jan '27"
 
     const naoAplica = pag && pag.naoAplica === true;
     const pago      = pag && pag.pago === true;
@@ -1950,18 +1991,9 @@ function adicionarUnidade(predioId){
             let inadimplentesCount = 0;
             p.unidades.forEach(u => {
                 if (u.inquilino && u.inquilino.pagamentos) {
-                    const mesAtual = HOJE.getMonth();
-                    const diaVenc = parseInt(u.inquilino.venc);
-                const pagamentoMes = u.inquilino.pagamentos[mesAtual];
-const pago = pagamentoMes && pagamentoMes.pago === true;
-const venceu = HOJE.getDate() > diaVenc;
-
-if (estaInadimplente(u.inquilino)) {
-  inadimplentesCount++;
-}
-
-
-
+                  if (estaInadimplente(u.inquilino)) {
+                    inadimplentesCount++;
+                  }
                 }
             });
             const ocupados = p.unidades.length - livres;
@@ -2307,7 +2339,7 @@ function abrirBaixaPagamento(mesIndex) {
     new Date().toISOString().split('T')[0];
 
   document.getElementById('baixaSubtitulo').innerText =
-    `${MESES[mesIndex]} • ${inq.nome}`;
+    `${getMesAnoLabel(inq, mesIndex)} • ${inq.nome}`;
 
   atualizarTotalBaixa();
 
@@ -2356,7 +2388,7 @@ function confirmarPagamento() {
     predioId: currentViewingPredioId,
     unidade: unidadeNome,
     inquilinoNome: inq.nome,
-    observacao: `Aluguel mensal (ref. ${MESES[mesGrid]})`
+    observacao: `Aluguel mensal (ref. ${getMesAnoLabel(inq, mesGrid)})`
   });
 
   if (juros > 0) {
@@ -2383,7 +2415,7 @@ function reverterPagamento(mesIndex) {
   const inq = findInquilinoById(currentInquilinoId);
   if (!inq) return;
 
-  const mesNome = MESES[mesIndex];
+  const mesNome = getMesAnoLabel(inq, mesIndex);
 
   if (!confirm(`Deseja reverter o pagamento de ${mesNome}?`)) return;
 
@@ -2851,11 +2883,10 @@ function avisarInquilinoAutomatico(inq) {
     return;
   }
 
-  const hoje = HOJE;
-  const mesAtual = hoje.getMonth();
-  const diaHoje = hoje.getDate();
+  const diaHoje = HOJE.getDate();
   const diaVenc = parseInt(inq.venc);
-  const pagamentoMes = inq.pagamentos[mesAtual] || { pago: false };
+  const mesAtualIdx = getMesAtualIndex(inq);
+  const pagamentoMes = inq.pagamentos[mesAtualIdx] || { pago: false };
   const pago = pagamentoMes && pagamentoMes.pago === true;
 
   if (pago) {
@@ -2867,7 +2898,8 @@ function avisarInquilinoAutomatico(inq) {
   const diasRestantes = diaVenc - diaHoje;
 
   const telefoneLimpo = inq.telefone.replace(/\D/g, '');
-  const nomeMes = MESES[mesAtual];
+  const nomeMes = getMesAnoLabel(inq, mesAtualIdx);
+  const anoMes = getAnoDoIndex(inq, mesAtualIdx);
 
   let mensagem = '';
 
@@ -2875,7 +2907,7 @@ function avisarInquilinoAutomatico(inq) {
 
     mensagem =
       `Olá ${inq.nome}, tudo bem?\n\n` +
-      `Seu aluguel referente a ${nomeMes}/2026 no valor de R$ ${inq.valor} está vencido.\n\n` +
+      `Seu aluguel referente a ${nomeMes}/${anoMes} no valor de R$ ${inq.valor} está vencido.\n\n` +
       `Por favor, nos informe sobre o pagamento.\n`;
 
   }
@@ -2883,7 +2915,7 @@ function avisarInquilinoAutomatico(inq) {
 
     mensagem =
       `Olá ${inq.nome}, tudo bem?\n\n` +
-      `Seu aluguel de ${nomeMes}/2026 no valor de R$ ${inq.valor} vence em ${diasRestantes} dia(s).\n\n` +
+      `Seu aluguel de ${nomeMes}/${anoMes} no valor de R$ ${inq.valor} vence em ${diasRestantes} dia(s).\n\n` +
       `Qualquer dúvida, ficamos à disposição.\n`;
 
   }
@@ -3182,16 +3214,14 @@ function renderListaArquivos() {
 function exportarExcel() {
   const wb = XLSX.utils.book_new();
 
+  // ── Prédios ──────────────────────────────────────────────
   const predios = db.predios.map(p => ({
     predio_id: p.id,
     nome: p.nome
   }));
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(predios),
-    'Predios'
-  );
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(predios), 'Predios');
 
+  // ── Unidades ─────────────────────────────────────────────
   const unidades = [];
   db.predios.forEach(p => {
     p.unidades.forEach(u => {
@@ -3203,12 +3233,9 @@ function exportarExcel() {
       });
     });
   });
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(unidades),
-    'Unidades'
-  );
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(unidades), 'Unidades');
 
+  // ── Inquilinos ativos + Pagamentos ───────────────────────
   const inquilinos = [];
   const pagamentos = [];
 
@@ -3219,19 +3246,23 @@ function exportarExcel() {
           inquilino_id: u.inquilino.id,
           unidade_id: u.id,
           nome: u.inquilino.nome,
-          telefone: u.inquilino.telefone,
+          telefone: u.inquilino.telefone || '',
+          cpf: u.inquilino.cpf || '',
+          rg: u.inquilino.rg || '',
+          endereco: u.inquilino.endereco || '',
           valor: u.inquilino.valor,
           venc: u.inquilino.venc,
-          caucao: u.inquilino.caucao
+          caucao: u.inquilino.caucao || 0
         });
 
-        u.inquilino.pagamentos.forEach((pg, mes) => {
+        (u.inquilino.pagamentos || []).forEach((pg, mes) => {
           pagamentos.push({
             inquilino_id: u.inquilino.id,
             mes,
             pago: pg.pago || false,
             aluguel: pg.aluguel || 0,
             juros: pg.juros || 0,
+            proporcional: pg.proporcional || false,
             data: pg.data || ''
           });
         });
@@ -3239,25 +3270,46 @@ function exportarExcel() {
     });
   });
 
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(inquilinos),
-    'Inquilinos'
-  );
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inquilinos), 'Inquilinos');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pagamentos), 'Pagamentos');
 
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(pagamentos),
-    'Pagamentos'
-  );
+  // ── Histórico de Inquilinos (encerrados) ─────────────────
+  const historico = (db.historicoInquilinos || []).map(h => ({
+    inquilino_id: h.id,
+    nome: h.nome,
+    telefone: h.telefone || '',
+    cpf: h.cpf || '',
+    rg: h.rg || '',
+    endereco: h.endereco || '',
+    valor: h.valor,
+    venc: h.venc,
+    caucao: h.caucao || 0,
+    predio_id: h.predioId || '',
+    predio_nome: h.predioNome || '',
+    unidade_nome: h.unidadeNome || '',
+    encerrado_em: h.encerradoEm || ''
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(historico.length ? historico : [{}]), 'HistoricoInquilinos');
 
+  // ── Financeiro (lançamentos: receitas + despesas) ────────
   XLSX.utils.book_append_sheet(
     wb,
     XLSX.utils.json_to_sheet(db.financeiro.lancamentos || []),
     'Financeiro'
   );
 
-  XLSX.writeFile(wb, 'backup_sistema.xlsx');
+  // ── Usuários (sem senha) ─────────────────────────────────
+  const usuarios = (db.usuarios || []).map(u => ({
+    id: u.id,
+    nome: u.nome,
+    login: u.login,
+    role: u.role
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(usuarios.length ? usuarios : [{}]), 'Usuarios');
+
+  // ── Nome com data para não sobrescrever backups anteriores
+  const hoje = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `backup_sistema_${hoje}.xlsx`);
 }
    
 function importarExcel(input) {
@@ -3304,6 +3356,7 @@ function importarExcel(input) {
               venc: inq.venc,
               caucao: inq.caucao,
               arquivos: [],
+              anoEntrada: 2026,
               pagamentos: Array.from({ length: 12 }, (_, mes) => {
                 const pg = pagamentos.find(
                   p => p.inquilino_id === inq.inquilino_id && p.mes === mes
