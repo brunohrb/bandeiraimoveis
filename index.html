@@ -3252,7 +3252,8 @@ function exportarExcel() {
           endereco: u.inquilino.endereco || '',
           valor: u.inquilino.valor,
           venc: u.inquilino.venc,
-          caucao: u.inquilino.caucao || 0
+          caucao: u.inquilino.caucao || 0,
+          ano_entrada: u.inquilino.anoEntrada || 2026
         });
 
         (u.inquilino.pagamentos || []).forEach((pg, mes) => {
@@ -3356,7 +3357,7 @@ function importarExcel(input) {
               venc: inq.venc,
               caucao: inq.caucao,
               arquivos: [],
-              anoEntrada: 2026,
+              anoEntrada: inq.ano_entrada || 2026,
               pagamentos: Array.from({ length: 12 }, (_, mes) => {
                 const pg = pagamentos.find(
                   p => p.inquilino_id === inq.inquilino_id && p.mes === mes
