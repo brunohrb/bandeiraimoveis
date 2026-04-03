@@ -2658,8 +2658,8 @@ const valor = moedaParaNumero(
     d.categoria = categoria;
     d.valor = valor;
     d.data = data;
-    d.mes = new Date(data).getMonth();
-    d.ano = new Date(data).getFullYear();
+    d.mes = new Date(data + 'T12:00:00').getMonth();
+    d.ano = new Date(data + 'T12:00:00').getFullYear();
     d.predioId = predioId;
     d.fornecedor = fornecedor;
 
@@ -2675,7 +2675,7 @@ const valor = moedaParaNumero(
     db.financeiro.lancamentos = [];
   }
 
-  const d = new Date(data);
+  const d = new Date(data + 'T12:00:00');
 
   db.financeiro.lancamentos.push({
     id: Date.now(),
@@ -2761,10 +2761,14 @@ function abrirModalDespesa() {
   if (isReadOnly()) return;
   window.despesaEditandoId = null;
 
+  // Data padrão = hoje no fuso local (evita problema de UTC)
+  const _h = new Date();
+  const _dataHoje = `${_h.getFullYear()}-${String(_h.getMonth()+1).padStart(2,'0')}-${String(_h.getDate()).padStart(2,'0')}`;
+
   document.getElementById('despDescricao').value = '';
   document.getElementById('despCategoria').value = 'manutencao';
   document.getElementById('despValor').value = '';
-  document.getElementById('despData').value = '';
+  document.getElementById('despData').value = _dataHoje;
   document.getElementById('despFornecedor').value = '';
   document.getElementById('despPredio').value = '';
 
@@ -4229,7 +4233,7 @@ function excluirUsuario(id) {
 </div>
 
 <!-- Input oculto para anexar arquivos às despesas -->
-<input type="file" id="inputAnexoDespesa" accept=".pdf,.xlsx,.xls,.docx,.doc" class="hidden" onchange="salvarAnexoDespesa(this)">
+<input type="file" id="inputAnexoDespesa" class="hidden" onchange="salvarAnexoDespesa(this)">
 
     <div id="modalHistoricoUnidade" class="modal">
   <div class="card w-[95%] max-w-4xl max-h-[85vh] overflow-y-auto">
